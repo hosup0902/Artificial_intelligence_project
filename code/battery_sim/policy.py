@@ -45,6 +45,7 @@ GRASP_DEPTH = 0.016                         # fingertips this far below the devi
 HANDLE_D = 0.022                            # pry-tool handle width across the jaws
 UNLATCH_SHIFT = 0.0062                      # push the cells this far into their springs (lip overhang 4.5 mm; the
                                             # tool's back face must clear the lip end before the lift)
+DROP_LEAD = 0.04                            # sideways travel of a cell sliding out of the rolling device (m)
 R_LEAN = np.radians(20.0)                   # main arm grasp approach lean (keeps its wrist clear of the tool arm)
 LEAN = TOOL_FOOT_ANGLE                      # the tool is held leaning back (handle toward arm L) by 10 deg: with a
                                             # vertical tool the SO-101 wrist-flex limit (95 deg) is hit near the jig
@@ -169,6 +170,17 @@ class Arm:
     def grip(self, value, t=0.6):
         self.grip_cmd = value
         yield from self.wait(t)
+
+    def regulate_grip(self, body, lo=18.0, hi=32.0, step=0.004, n=12):
+        """Keep the squeeze inside [lo, hi] N (the servo keeps pushing toward its target after contact)."""
+        for _ in range(n):
+            f = self.env.grip_force(self.key, body)
+            if lo <= f <= hi:
+                return
+            self.grip_cmd += step if f > hi else -step
+            self.set(self.qcmd, self.grip_cmd)
+            for _ in range(3):
+                yield
 
     def compliant_close(self, body, target_force=30.0, step=0.006):
         """Force-limited grasp: close the jaw in small position steps until the jaw contact force on
@@ -373,12 +385,13 @@ class SkillPolicy:
             self._grasp_axes = axes
             yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
             yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
-            yield from A.compliant_close("remote_body", 33.0)
+            yield from A.compliant_close("remote_body", 28.0)
             self._holding = True
             if not lift:
                 return self.stage("hold_device", self.env.grip_force("R") > 10.0)
         c = A.tool(self.grasp_off)[0]
         yield from A.move([c[0], c[1], 0.12], self._grasp_axes, self.grasp_off, speed=0.06, settle=0.3)
+        yield from A.regulate_grip("remote_body", lo=12.0, hi=22.0)
         pd, _ = self.device()
         lifted = pd[2] > 0.06
         pa, Ra = A.tcp_actual()
@@ -512,10 +525,10 @@ class SkillPolicy:
                 return r
         return None
 
-    def plan_flip(self, rel, n=60000, seed=0):
+    def plan_flip(self, rel, n=120000, seed=0):
         """Sample arm poses with wrist roll ~ 0 (tool y = wrist-flex axis = device long axis) where the
         device is >= 120 deg upside-down, clears the bin rim and has its pocket above the bin; keep the
-        closest-to-centre one for which the in-place roll path from upright exists."""
+        closest-to-centre one for which the in-place roll path from upright and an upright transit exist."""
         prel, Rrel, comp_off, corners = rel
         ik = self.R.ik
         bc = np.array(BATTERY_BIN["center"][:2])
@@ -529,29 +542,35 @@ class SkillPolicy:
             pd, Rd, cw, comp = self._dev_geom(q, rel)
             if Rd[2, 2] > -0.5 or cw[:, 2].min() < top + 0.035 or comp[2] > top + 0.30:
                 continue
-            d = np.linalg.norm(comp[:2] - bc)
-            if d < 0.04:
-                cands.append((d, q))
+            # the freed cells slide out through the pocket opening at ~90 deg of roll and keep some sideways
+            # speed: aim the expected landing point (pocket + 4 cm along the opening's horizontal direction)
+            # at the bin centre, and prefer low drops
+            uh = Rd[:2, 2] / max(np.linalg.norm(Rd[:2, 2]), 1e-6)
+            d = np.linalg.norm(comp[:2] + DROP_LEAD * uh - bc)
+            if d < 0.045 and np.linalg.norm(comp[:2] - bc) < 0.05:
+                cands.append((d + 1.0 * (comp[2] - top), q))
         cands.sort(key=lambda c: c[0])
-        for d, q in cands[:80]:
-            if self.arm_collides(q):
+        for d, q0 in cands[:200]:
+            if self.arm_collides(q0):
                 continue
-            # refine: pocket exactly above the centre, keeping the tool y axis and device up-axis
-            p, R = ik.fk(q)
-            pd, Rd, cw, comp = self._dev_geom(q, rel)
-            q2, err, rerr = ik.solve(q, [bc[0], bc[1], comp[2]], {1: R[:, 1]}, comp_off,
+            # refined variant: pocket exactly above the centre, keeping the tool y axis and device up-axis
+            p, R = ik.fk(q0)
+            pd, Rd, cw, comp = self._dev_geom(q0, rel)
+            uh = Rd[:2, 2] / max(np.linalg.norm(Rd[:2, 2]), 1e-6)
+            aim = bc - DROP_LEAD * uh
+            q2, err, rerr = ik.solve(q0, [aim[0], aim[1], comp[2]], {1: R[:, 1]}, comp_off,
                                      vecs=[(Rrel[:, 2], Rd[:, 2])], iters=200)
-            if err < 0.005 and rerr < 0.05:
-                q = q2
-            if self.arm_collides(q):
-                continue
-            path = self._roll_path(q, rel)
-            if path is None:
-                continue
-            if self._transit_route(self.R.qcmd.copy(), path[0], rel) is None:
-                continue
-            pd, Rd, cw, comp = self._dev_geom(q, rel)
-            return np.linalg.norm(comp[:2] - bc), path, comp, -np.degrees(np.arccos(np.clip(Rd[2, 2], -1, 1)))
+            variants = ([q2] if err < 0.005 and rerr < 0.05 else []) + [q0]
+            for q in variants:
+                if self.arm_collides(q):
+                    continue
+                path = self._roll_path(q, rel)
+                if path is None:
+                    continue
+                if self._transit_route(self.R.qcmd.copy(), path[0], rel) is None:
+                    continue
+                pd, Rd, cw, comp = self._dev_geom(q, rel)
+                return np.linalg.norm(comp[:2] - bc), path, comp, -np.degrees(np.arccos(np.clip(Rd[2, 2], -1, 1)))
         return None
 
     upright_min = 0.5
