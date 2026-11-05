@@ -96,3 +96,9 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - ablation 0/12 ×2, README/legacy 정리, eval11 39/40 → pry 들어올리기 균형 로직 수정 후 80회 재검증 중.
 - AA 안정(40/40), AAA 미세 실패 반복 추적 중 (eval12~15).
 - eval15 분석 → hold 파지 실패 감지/재파지, 수직 진입, yaw 피드백, snag guard, lat 제한 추가 → eval16 진행.
+- eval16(재파지 버그로 TV/STB hold 실패)·eval17(0° 기울기 → 두 팔 충돌) 중단. eval18(hold 원복 + pry 변경만): AA 양호, AAA 불안정.
+- **AAA 근본 원인**: 셀 간격 19 mm면 셀 최저선(9.5 mm)이 공구 발(±8 mm) 밖 → 발이 셀 안쪽 곡면을 쐐기처럼 밀어 불균형. → **AAA pitch 16 mm**(AA와 같은 기하). retention 통과, light 1/3/7/13/16 1회 성공.
+- hold 파지: `_hold_descend` = IK 목표 사전 보정(FK가 원하는 고정 조 위치가 될 때까지 목표 이동) + 관절공간 이동, 20° 유지, 움직이는 조 힘 <1.5 N이면 2 mm 바깥 재시도(AC 제외).
+- 데모: `code/live_demo.py`(대화형 뷰어, Space 일시정지, 배속, 단계 표시, --mode no_tool/push_only), `code/DEMO_GUIDE.md`. 사용자가 직접 촬영 예정(영상 생성 불필요).
+- 보고서 자료: 저장소 루트 `REPORT_MATERIAL.md` (최종 결과 11장은 평가 후 기입).
+- [진행중] eval19 (`code/dev_tools/_out/eval19/`).
