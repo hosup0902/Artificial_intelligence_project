@@ -5,7 +5,7 @@ from view import views
 from battery_sim.env import BatteryRemovalEnv
 from battery_sim.policy import SkillPolicy, R_LEAN
 env = BatteryRemovalEnv(device=sys.argv[1]); env.reset(int(sys.argv[2]))
-pol = SkillPolicy(env, verbose=False)
+pol = SkillPolicy(env, verbose=True)
 pol.run_par(pol._main_prep(), pol._tool_prep()); pol.run_par(pol.tool_standby())
 pol.run_par(pol.grasp_device(lift=False, gx=pol.dm["hold_x"], lean=R_LEAN))
 m = env.m

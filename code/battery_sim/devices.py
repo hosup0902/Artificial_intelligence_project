@@ -18,7 +18,7 @@ The battery compartment follows the construction of a real remote control:
                       Pushing it toward the spring alone does not free it either: the spring
                       pushes it straight back under the lip. The + end has to be pushed past
                       the lip AND lifted above the lip top, which is what a pry tool does.
-  * pry notch       : notch behind the + ends (19 mm wide, 10 mm long), whose floor is recessed 3 mm and continues
+  * pry notch       : notch behind the + ends (18 mm wide, 10 mm long), whose floor is recessed 3 mm and continues
                       16 mm under the + ends, so a thin pry tool with a wide hooked tip can reach under
                       both cell ends; above the cells the lips leave only a 9.6 mm gap (< any cell).
   * cells           : free bodies with IEC dimensions (AA 14.5 x 50.5 mm, 23 g; AAA 10.5 x 44.5 mm, 11.5 g).
@@ -61,12 +61,12 @@ SPRING_K = 400.0                   # N/m coil spring (1.5 mm preload -> 0.6 N; ~
 SPRING_STROKE = 0.0100             # plunger travel beyond the seated position
 LIP_LEN = 0.0045                   # retaining lip overhang over the + ends (m)
 LIP_GAP = 0.0005                   # play between a seated cell's crest and the lip underside
-SLOT_HALF_W = 0.0095               # pry notch half-width: just outside both cells' lowest lines (|y| = 8-8.5 mm),
-                                   # so the tool foot (+-8.4 mm) lifts the cells from below, not by wedging between them
+SLOT_HALF_W = 0.0090               # pry notch half-width: just outside both cells' lowest lines (|y| = 8-8.5 mm),
+                                   # so the tool foot (+-8.0 mm) lifts the cells from below, not by wedging between them
 LIP_IN = 0.0048                    # retaining lips start at |y| = 4.8 mm: the 9.6 mm gap between them is narrower
                                    # than any cell (AAA 10.5 mm), the pry tool's 8 mm neck passes through it
 SLOT_LEN = 0.010                   # pry notch length behind the + end stop (short: a cell cannot drop into it)
-REC_HALF_W = 0.0090                # under the cells the recess is only as wide as the tool foot (+-8.4 mm) needs;
+REC_HALF_W = 0.0090                # under the cells the recess is only as wide as the tool foot (+-8.0 mm) needs;
                                    # the light AAA cells sit wider apart so their lowest lines (9.5 mm) rest on solid
                                    # floor beside it (a + end sinking into it lets an upside-down cell pivot out)
 PRY_DEPTH = 0.003                  # notch floor sits 3 mm below the pocket floor ...
@@ -165,8 +165,9 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
     for s_ in (-1, 1):
         y0, y1 = sorted((s_ * slot_w, s_ * W / 2))
         g.append(_box(f"{p}slab{'L' if s_ > 0 else 'R'}", (nx0, y0, 0), (px1, y1, floor), m, col))
-        y0, y1 = sorted((s_ * REC_HALF_W, s_ * slot_w))
-        g.append(_box(f"{p}recedge{'L' if s_ > 0 else 'R'}", (cx0, y0, 0), (px1, y1, floor), m, col))
+        if REC_HALF_W < slot_w - 1e-6:
+            y0, y1 = sorted((s_ * REC_HALF_W, s_ * slot_w))
+            g.append(_box(f"{p}recedge{'L' if s_ > 0 else 'R'}", (cx0, y0, 0), (px1, y1, floor), m, col))
     g.append(_box(f"{p}slotfloor", (nx0, -slot_w, 0), (px1, slot_w, slot_floor), m, col))
     # solid rear section, notch side walls, + end stop and retaining lips
     g.append(_box(f"{p}rear", (-L / 2, -W / 2, floor), (nx0, W / 2, T), m, col))

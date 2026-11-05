@@ -526,13 +526,14 @@ class SkillPolicy:
     @staticmethod
     def cells_safe(Rd):
         """Freed cells rest loosely in the pocket with their + ends on the lip tops: they stay in while the
-        device rolls <= 30 deg, tips rear-down <= 30 deg or front-down (toward the spring end) <= 55 deg."""
+        device rolls <= 30 deg, tips rear-down <= 30 deg or front-down <= 20 deg (more and a loose cell slides off
+        the lip top toward its spring and drops back under the lip)."""
         g = Rd.T @ np.array([0.0, 0.0, -1.0])               # gravity in the device frame
         if g[2] > -0.3:
             return False
         roll = np.degrees(np.arctan2(abs(g[1]), -g[2]))
         pitch = np.degrees(np.arctan2(g[0], -g[2]))          # > 0: front (spring end) down
-        return roll <= 30.0 and -30.0 <= pitch <= 55.0
+        return roll <= 30.0 and -30.0 <= pitch <= 20.0
 
     def _upright_path(self, q0, q1, rel, n=25):
         """Joint-space segment check: the freed cells only rest loosely on the lip tops, so the device must stay
@@ -836,6 +837,10 @@ class SkillPolicy:
         yield from A.goto(self.local(cx0 + 0.04, yoff, T + 0.012), axes, off, dur=1.2, settle=0.1)
         self.phase("pry_approach")
         x_in = cx0 - 0.0060                                     # foot tip 1 mm short of the + end faces
+        if any(free0):
+            # retry with one cell already free: its raised + end rests over the front of the notch, so enter at
+            # the back of the notch (foot tip ~4.4 mm behind the stop) and push from there
+            x_in = cx0 - 0.0090
         e0 = yield from A.move(P(x_in, T + 0.003), axes, off, speed=0.03, settle=0.1)
         yield from correct(x_in, T + 0.003)
         self.phase("pry_above")
@@ -932,12 +937,25 @@ class SkillPolicy:
                             pl_ = self.device()[1].T @ (c.pos - self.device()[0])
                             self.say(f"            {other} pushes {gh} up {sign*fw[2]:.2f} N at dev {np.round(1000*pl_,1)} mm")
                     self.say("         Fz on housing by: " + ", ".join(f"{k} {v:+.2f}" for k, v in fz.items() if abs(v) > 0.05))
+                    rbL = self.env.arm_bodies["L"]
+                    for i in range(d_.ncon):
+                        c = d_.contact[i]
+                        b1, b2 = m_.geom_bodyid[c.geom1], m_.geom_bodyid[c.geom2]
+                        if (b1 in rbL) != (b2 in rbL) and self.env.tool_bid not in (b1, b2):
+                            self.say(f"         armL contact: {m_.geom(c.geom1).name or m_.body(b1).name} | {m_.geom(c.geom2).name or m_.body(b2).name}")
                 self.phase("pry_lift_step")
             bias = bias + yd * lat
             lifted = self.cell_state()
             self.phase("pry_lifted")
             # let the springs push the raised cells back over the lip top, set them down on it
-            yield from A.move(P(cx0 + 0.001, z) + yd * ybal, axes, off, speed=0.006, settle=0.1)
+            # the foot (bottom 0.5 mm below the tip site) must pass over the lip end: >= 1 mm above the lip top
+            z = max(z, cz + 0.0015)
+            yield from A.move(P(xb, z) + yd * ybal, axes, off, speed=0.006, min_time=0.1, settle=0.05)
+            e_sb = yield from A.move(P(cx0 + 0.001, z) + yd * ybal, axes, off, speed=0.006, settle=0.1)
+            if self.on_phase is not None:
+                pa, _ = A.tcp_actual()
+                self.say(f"      slide back: ik {1000*e_sb:.1f} mm, track {1000*np.linalg.norm(pa - A.tool()[0]):.1f} mm, "
+                         f"cmd tip {np.round(1000*(R.T @ (A.tool(off)[0] - p)) - [1000*cx0, 0, 0], 1)}")
             self.phase("pry_slid_back")
             yield from A.move(P(cx0 + 0.001, cz - 0.0035), axes, off, speed=0.006, settle=0.1)
             self.phase("pry_set_down")

@@ -353,7 +353,7 @@ def _tool_xml():
     """Thin steel pry tool (spudger / thin-blade battery opener) with a moulded handle, in its holder.
 
     Tool frame: origin at the tip, +z toward the handle, +x = direction the hooked foot points.
-      blade  : 0.8 mm thick (x) spring steel: 16.8 mm wide (y) for z in [0, 0.0125], 8 mm wide neck up to 0.0245
+      blade  : 0.8 mm thick (x) spring steel: 16 mm wide (y) for z in [0, 0.0095], 8 mm wide neck up to 0.0245
       foot   : 5 mm hook at the tip, bent toward +x (and 10 deg up), 1.0 mm thick (gets under a cell's + end)
       shank  : z in [0.0245, 0.033]
       handle : 11 (x) x 22 (y) mm moulded grip, z in [0.033, 0.088]; its lower face rests on the holder
@@ -369,11 +369,11 @@ def _tool_xml():
     g = [
         # T-shaped tip: wide lower blade (pushes both + end faces, foot reaches under both cells), narrow neck
         # above it that passes between the retaining lips
-        f'<geom name="pry_blade" type="box" pos="0 0 0.0065" size="0.0004 0.0084 0.0060" {steel} mass="0.002"/>',
-        f'<geom name="pry_neck" type="box" pos="0 0 0.0185" size="0.0004 0.0040 0.0060" {steel} mass="0.001"/>',
+        f'<geom name="pry_blade" type="box" pos="0 0 0.0050" size="0.0004 0.0080 0.0045" {steel} mass="0.002"/>',
+        f'<geom name="pry_neck" type="box" pos="0 0 0.0170" size="0.0004 0.0040 0.0075" {steel} mass="0.001"/>',
         # hooked foot, bent up by TOOL_FOOT_ANGLE so that it is level while the tool leans back by that angle
         f'<geom name="pry_foot" type="box" pos="{_f(*foot_c)}" euler="0 {-TOOL_FOOT_ANGLE:.4f} 0" '
-        f'size="0.0028 0.0084 0.0005" {steel} mass="0.0006"/>',
+        f'size="0.0028 0.0080 0.0005" {steel} mass="0.0006"/>',
         f'<geom name="pry_shank" type="box" pos="0 0 {0.0245 + (tl - 0.0245) / 2:.4f}" size="0.0012 0.0040 {(tl - 0.0245) / 2:.4f}" '
         f'{steel} mass="0.002"/>',
         f'<geom name="pry_handle" type="box" pos="0 0 {tl + hl / 2:.4f}" size="0.0055 0.011 {hl / 2:.4f}" {grip} mass="0.016"/>',
