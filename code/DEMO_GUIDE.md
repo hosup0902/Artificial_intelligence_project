@@ -18,12 +18,12 @@ uv pip install --python .venv/bin/python -r requirements.txt   # Windows: .venv\
 ## 2. 실행
 
 ```bash
-python live_demo.py --device tv_remote --seed 1                 # 실시간, 일시정지로 시작
-python live_demo.py --device light_remote --seed 1 --speed 0.5  # 0.5배속(슬로모션)
-python live_demo.py --device ac_remote --seed 2 --pause-stages  # 단계가 끝날 때마다 자동 일시정지
-python live_demo.py --device stb_remote --seed 1 --cam free --clean   # 마우스로 시점 조작, 옆 패널 숨김
-python live_demo.py --device tv_remote --seed 1 --mode no_tool       # 대조실험: 그냥 뒤집기 → 건전지 안 빠짐
-python live_demo.py --device tv_remote --seed 1 --mode push_only     # 대조실험: 스프링 쪽으로 밀기만 → 안 빠짐
+python live_demo.py --device tv_remote --seed 5                 # 실시간, 일시정지로 시작
+python live_demo.py --device light_remote --seed 15 --speed 0.5  # 0.5배속(슬로모션)
+python live_demo.py --device ac_remote --seed 5 --pause-stages  # 단계가 끝날 때마다 자동 일시정지
+python live_demo.py --device stb_remote --seed 9 --cam free --clean   # 마우스로 시점 조작, 옆 패널 숨김
+python live_demo.py --device tv_remote --seed 5 --mode no_tool       # 대조실험: 그냥 뒤집기 → 건전지 안 빠짐
+python live_demo.py --device tv_remote --seed 5 --mode push_only     # 대조실험: 스프링 쪽으로 밀기만 → 안 빠짐
 ```
 
 | 키 (뷰어 창에서) | 동작 |
@@ -64,10 +64,24 @@ python live_demo.py --device tv_remote --seed 1 --mode push_only     # 대조실
 
 ## 5. 추천 seed (평가에서 재시도 없이 깔끔하게 성공한 경우)
 
-(평가 결과로 채움)
+최종 평가(eval20, 80/80)에서 모두 성공했고, 아래는 가장 빨리(재시도 없이) 끝나고 공구 반납까지 성공한 seed.
+
+| 기기 | 추천 seed | 소요(시뮬레이션 시간) |
+|---|---|---|
+| TV 리모컨 `tv_remote` | 5 (또는 14, 15) | 68.8 s |
+| 셋톱박스 리모컨 `stb_remote` (AAA) | 9 (또는 13, 7) | 66.3 s |
+| 에어컨 리모컨 `ac_remote` | 5 (또는 10, 14) | 68.0 s |
+| 조명 리모컨 `light_remote` (AAA) | 15 (또는 9, 13) | 66.1 s |
+
+**실패 케이스**(과제 요구: 영상에 성공과 실패 모두): 최종 정책은 80/80이므로 대조실험으로 보여 준다.
+`python live_demo.py --device tv_remote --seed 5 --mode no_tool` (뒤집어도 셀이 립에 걸려 안 떨어짐) 또는
+`--mode push_only` (밀기만 하면 스프링이 셀을 다시 립 밑으로 밀어 넣음). 결과 화면에 `DONE - FAILED`.
+
+**3분 제한**: 에피소드 하나가 약 70 s(1배속)이므로, 전체 롤아웃 1개(pry 부분만 `-`로 0.5배속) + 대조실험은
+뒤집는 부분만(필요하면 `=`로 2배속) + 나머지는 설명 위주로 구성하면 3분 안에 들어간다.
 
 ## 6. (선택) 녹화 대신 mp4로 뽑아서 나중에 내레이션 입히기
 
 ```bash
-python run_episode.py --seeds 1 --device tv_remote --video --cam closeup   # videos/ 에 mp4 (OSMesa/EGL 등 GL 필요)
+python run_episode.py --seeds 5 --device tv_remote --video --cam closeup   # videos/ 에 mp4 (OSMesa/EGL 등 GL 필요)
 ```

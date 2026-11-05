@@ -66,6 +66,8 @@ def main():
                  peak_force=round(float(env.log.peak_force), 2), peak_info=env.log.peak_info,
                  sim_time=round(float(env.d.time), 2), steps=int(round(env.d.time / env.m.opt.timestep)),
                  failed_stage=failed, tool_returned=bool(final.get("return_tool", False)),
+                 pry_attempts=sum(n == "pry_cells" for n, _, _ in env.log.stages),
+                 hold_ok=bool(final.get("hold_device", False)),
                  wall=round(time.time() - t0, 1))
         results.append(r)
         print(json.dumps(r, ensure_ascii=False))
