@@ -407,8 +407,19 @@ class SkillPolicy:
                 axes = {2: ap, 0: -y}
             self._grasp_axes = axes
             yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
-            yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
-            yield from A.compliant_close("remote_body", 28.0 if not lift else 33.0)
+            for k in range(3):
+                yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
+                yield from A.compliant_close("remote_body", 28.0 if not lift else 33.0)
+                if self.env.jaw_force("R") > 3.0:
+                    break
+                # missed: the fixed jaw came down on the top edge instead of beside the side wall (the jaw is
+                # placed with zero clearance) -> open, back up and come down again 2.5 mm further out
+                self.say(f"[R] grasp missed (moving jaw {self.env.jaw_force('R'):.1f} N, jaw {self.env.d.qpos[A.io.gq]:.2f} rad)"
+                         " -> re-grasp with clearance")
+                yield from A.grip(GRIP_OPEN, t=0.3)
+                yield from A.move([c[0], c[1], top + 0.01], axes, self.grasp_off, speed=0.04, settle=0.1)
+                fj = np.asarray(axes[0], float)          # TCP x = toward the fixed jaw (grasp_off convention)
+                c = c + 0.0025 * fj / np.linalg.norm(fj)
             A.force_limit = ("remote_body", 18.0, 30.0)
             self.phase("grasp_closed")
             self._holding = True
@@ -842,32 +853,55 @@ class SkillPolicy:
             # the back of the notch (foot tip ~4.4 mm behind the stop) and push from there
             x_in = cx0 - 0.0090
         e0 = yield from A.move(P(x_in, T + 0.003), axes, off, speed=0.03, settle=0.1)
+        # stand the blade upright ABOVE the notch (pushing with the top edge of a leaning blade would tip the
+        # + ends up into the lip; re-orienting inside the 2 mm-wider notch would sweep the blade edge into its
+        # side wall and shove the device), re-aim, then go straight down
+        axes_push = axes
+        yield from A.move(P(x_in, T + 0.003), axes_v, off, speed=0.02, min_time=0.6, settle=0.1)
+        axes = axes_v
         yield from correct(x_in, T + 0.003)
         self.phase("pry_above")
-        e1 = yield from A.move(P(x_in, z_low), axes, off, speed=0.03, settle=0.15)
-        # stand the blade upright (pushing with the top edge of a leaning blade would tip the + ends up
-        # into the lip), then re-aim
-        yield from A.move(P(x_in, z_low), axes_v, off, speed=0.02, min_time=0.6, settle=0.1)
-        axes_push = axes
-        axes = axes_v
+        e1 = yield from A.move(P(x_in, z_low + 0.004), axes, off, speed=0.02, settle=0.15)
+        yield from correct(x_in, z_low + 0.004)
+        yield from A.move(P(x_in, z_low), axes, off, speed=0.01, settle=0.15)
         yield from correct(x_in, z_low)
         _, Rt_now = self.tool_pose()
         bx = R.T @ Rt_now[:, 0]
         self._blade_yaw = float(np.degrees(np.arctan2(bx[1], bx[0])))
         self.say(f"[L] blade yaw error {self._blade_yaw:+.1f} deg, tilt {np.degrees(np.arcsin(np.clip(bx[2], -1, 1))):+.1f} deg")
         self.phase("pry_inserted")
+        # blade yaw feedback (wrist roll): unequal cell resistance twists the tool in the hand; a skewed blade
+        # leaves the lagging cell's lip end over the blade's back face, which would then hook the lip on lifting
+        ycorr = 0.0
+
+        def blade_yaw():
+            _, Rt_ = self.tool_pose()
+            bx_ = R.T @ Rt_[:, 0]
+            return float(np.arctan2(bx_[1], bx_[0]))
+
+        def yaw_axes(lean_ang):
+            nonlocal ycorr
+            ycorr = float(np.clip(ycorr - 0.7 * blade_yaw(), -0.25, 0.25))
+            c_, s_ = np.cos(ycorr), np.sin(ycorr)
+            return self.tool_axes(lean_frame(R @ np.array([[c_, -s_, 0], [s_, c_, 0], [0, 0, 1]]), lean_ang))
+
         # push both cells into their springs (feedback on the + end positions)
         xb = x_in
-        for _ in range(60):
+        clear = dm["lip_len"] + 0.0012          # + end shift at which the blade's back face is past the lip end
+        for _ in range(70):
             # stop on the measured cell shift; limit on the MEASURED tip (it lags the command under spring load)
             tip_x = float(R[:, 0] @ (self.env.d.site("pry_tip").xpos - p)) - cx0
             sh = [st[0] for st in self.cell_state()]
             if min(sh) > unlatch or tip_x > 0.0095:
                 break
-            if max(sh) > unlatch + 0.0015 and min(sh) > dm["lip_len"] + 0.0005:
+            if max(sh) > unlatch + 0.0015 and min(sh) > clear:
                 break                     # slightly skewed blade: do not drive the leading cell to the stroke end
+            if max(sh) > unlatch + 0.0035:
+                break
             xb += 0.0005
+            axes = yaw_axes(0.0)
             yield from A.move(P(xb, z_low), axes, off, speed=0.006, min_time=0.06, settle=0.03)
+        self.say(f"[L] pushed, blade yaw {np.degrees(blade_yaw()):+.1f} deg (roll corr {np.degrees(ycorr):+.1f})")
         pushed = [st[0] for st in self.cell_state()]
         self.phase("pry_pushed")
         lifted = pushed
@@ -881,9 +915,23 @@ class SkillPolicy:
             ybal = 0.0
             lat = 0.0
             yd = R[:, 1]
+            snags = 0
+            p_ref, _ = self.device()          # device height with the cells pushed (reference for snag detection)
             for k in range(45):
                 st = self.cell_state()
                 b0, b1 = st[0][1], st[1][1]
+                pn, Rn = self.device()
+                if (pn - p_ref)[2] > 0.0008 or Rn[2, 2] < 0.998:
+                    # the blade lifts the housing (caught under a lip): back down to the floor, push on, lift again
+                    snags += 1
+                    self.say(f"[L] snag {snags}: device raised {1000*(pn - p_ref)[2]:.1f} mm -> lower and push further")
+                    if snags > 3:
+                        break
+                    z = z_low
+                    if min(st[0][0], st[1][0]) < clear + 0.0005:
+                        xb = min(xb + 0.001, cx0 + 0.0095)
+                    yield from A.move(P(xb, z) + yd * ybal, yaw_axes(0.0), off, speed=0.01, min_time=0.3, settle=0.3)
+                    continue
                 if min(b0, b1) > cz + 0.0015:
                     break
                 if max(b0, b1) > cz + 0.003:
@@ -903,11 +951,14 @@ class SkillPolicy:
                 # lever back gradually (0 deg near the floor -> LEAN at the lip top): keeps the wrist inside its
                 # flex range as the tool rises, without a sudden re-orientation under load
                 frac = float(np.clip((z - dm["floor"] - 0.004) / max(cz - dm["floor"] - 0.004, 1e-3), 0, 1))
-                axes = self.tool_axes(lean_frame(R, LEAN * frac))
+                axes = yaw_axes(LEAN * frac)
                 tgt = self.local(xb, yoff, z) + yd * ybal
                 eik = yield from A.move(tgt + bias + yd * lat, axes, off, speed=0.01, min_time=0.12, settle=0.1)
                 ey = float(yd @ (tgt - self.env.d.site("pry_tip").xpos))
-                lat = float(np.clip(lat + 0.6 * np.clip(ey, -0.0015, 0.0015), -0.004, 0.004))   # keep the foot centred
+                # keep the foot centred: damped, clamped integral of the measured tip y error. The cells' curved
+                # undersides push the foot sideways while it lifts them; a large wound-up correction would fling
+                # the tool sideways when a cell pops free, so the integral is limited to 2 mm and bleeds off
+                lat = float(np.clip(0.9 * lat + 0.4 * np.clip(ey, -0.0015, 0.0015), -0.002, 0.002))
                 if self.verbose and self.on_phase is not None:
                     pa, _ = A.tcp_actual()
                     pa, Ra = A.tcp_actual(); _, Rt_ = self.tool_pose()

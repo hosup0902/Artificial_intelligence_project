@@ -22,3 +22,7 @@ def cb(name):
         views(env, str(HERE / "_out" / f"pf_{cnt[0]:02d}_{name}.png"), [(pl + [0.01, 0, 0.004], 0.08, 90, -10), (pl + [0.01, 0, 0.004], 0.08, 270, -10), (pl, 0.1, 200, -40)])
 pol.on_phase = cb
 pol.run_par(pol.pry_cells(0))
+for k in range(1, int(sys.argv[3]) if len(sys.argv) > 3 else 1):
+    if all(pol.cells_free()): break
+    print("=== retry", k); pol.run_par(pol.pry_cells(k))
+print("free:", pol.cells_free())

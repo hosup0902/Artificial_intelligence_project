@@ -220,6 +220,21 @@ class BatteryRemovalEnv:
                 tot += abs(f6[0])
         return tot
 
+    def jaw_force(self, arm="R", body="remote_body"):
+        """Normal force between the MOVING jaw of an arm and a body (the squeeze the jaw servo feels)."""
+        m, d = self.m, self.d
+        f6 = np.zeros(6)
+        tot = 0.0
+        bid = m.body(body).id
+        jb = m.body(self.arms[arm].prefix + "moving_jaw_so101_v1").id
+        for i in range(d.ncon):
+            c = d.contact[i]
+            b1, b2 = m.geom_bodyid[c.geom1], m.geom_bodyid[c.geom2]
+            if (b1 == jb and b2 == bid) or (b2 == jb and b1 == bid):
+                mujoco.mj_contactForce(m, d, i, f6)
+                tot += abs(f6[0])
+        return tot
+
     # ------------------------------------------------------------------ io
     def q_of(self, arm):
         return self.d.qpos[self.arms[arm].qadr].copy()
