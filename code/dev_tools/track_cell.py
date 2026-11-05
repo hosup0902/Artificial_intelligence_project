@@ -17,6 +17,8 @@ def step(sec):
                 c = d.contact[k]; b1, b2 = m.geom_bodyid[c.geom1], m.geom_bodyid[c.geom2]
                 if b in (b1, b2):
                     cons.append(m.geom(c.geom1 if b2 == b else c.geom2).name or m.body(b1 if b2 == b else b2).name)
+            up = d.xmat[m.body("remote_body").id].reshape(3,3)[:,2]; vel = d.qvel[m.jnt_dofadr[m.body_jntadr[b]]:][:3]
+            print(f"   up {np.round(up,2)} vel {np.round(vel,2)} pocket {np.round(d.site('remote_comp').xpos,3)}")
             print(f"t={d.time:.2f} cell{i} v={v:.2f} m/s pos {np.round(d.body(b).xpos,3)} spring {1000*d.qpos[m.joint(f'remote_spring{i}').qposadr[0]]:.1f}mm contacts {cons[:6]}")
 env.step = step
 pol.verbose = True

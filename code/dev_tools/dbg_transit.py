@@ -48,3 +48,18 @@ for dd, q in cands[:60]:
         continue
     st["ok"] += 1
 print(len(cands), st, reasons)
+import mujoco
+from collections import Counter
+cnt = Counter()
+m = env.m; sd = pol._scratch
+for dd, q in cands[:60]:
+    sd.qpos[:] = env.d.qpos; sd.qpos[A.io.qadr] = q
+    mujoco.mj_kinematics(m, sd); mujoco.mj_collision(m, sd)
+    rb = env.arm_bodies["R"]
+    for i in range(sd.ncon):
+        c = sd.contact[i]; b1, b2 = m.geom_bodyid[c.geom1], m.geom_bodyid[c.geom2]
+        if (b1 in rb) != (b2 in rb) and c.dist < -0.001:
+            o = b2 if b1 in rb else b1
+            if o in pol._ignore: continue
+            cnt[(m.body(b1 if b1 in rb else b2).name, m.body(o).name)] += 1
+print(cnt.most_common(8))

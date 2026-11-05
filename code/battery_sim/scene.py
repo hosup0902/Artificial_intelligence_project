@@ -36,7 +36,8 @@ NOMINAL_REMOTE_POSE = (0.205, 0.005, JIG_TOP + 0.0002)
 def nominal_pose(spec):
     """Spawn pose of a device: battery end 27 mm short of the jig fence (same as the TV remote)."""
     return (FENCE_X - spec.length / 2 - 0.027, 0.005, JIG_TOP + 0.0002)
-BATTERY_BIN = dict(center=(0.12, 0.34, 0.0), size=(0.15, 0.15, 0.085))   # 15x15 cm used-battery box
+BATTERY_BIN = dict(center=(0.12, 0.30, 0.0), size=(0.11, 0.17, 0.085))   # used-battery box (11 x 17 cm)
+FLIP_AIM = (0.12, 0.33)       # where the flip puts the pocket: freed cells slide out toward -y and land ~7 cm closer
 # second SO-101 ("tool arm", joint/body names prefixed "l_") across the jig, facing the main arm
 LEFT_BASE = (0.50, 0.0, 0.0)
 LEFT_YAW = np.pi

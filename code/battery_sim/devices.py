@@ -18,7 +18,7 @@ The battery compartment follows the construction of a real remote control:
                       Pushing it toward the spring alone does not free it either: the spring
                       pushes it straight back under the lip. The + end has to be pushed past
                       the lip AND lifted above the lip top, which is what a pry tool does.
-  * pry notch       : notch behind the + ends (19 mm wide), whose floor is recessed 3 mm and continues
+  * pry notch       : notch behind the + ends (19 mm wide, 10 mm long), whose floor is recessed 3 mm and continues
                       16 mm under the + ends, so a thin pry tool with a wide hooked tip can reach under
                       both cell ends; above the cells the lips leave only a 9.6 mm gap (< any cell).
   * cells           : free bodies with IEC dimensions (AA 14.5 x 50.5 mm, 23 g; AAA 10.5 x 44.5 mm, 11.5 g).
@@ -64,7 +64,7 @@ SLOT_HALF_W = 0.0095               # pry notch half-width: just outside both cel
                                    # so the tool foot (+-8.4 mm) lifts the cells from below, not by wedging between them
 LIP_IN = 0.0048                    # retaining lips start at |y| = 4.8 mm: the 9.6 mm gap between them is narrower
                                    # than any cell (AAA 10.5 mm), the pry tool's 8 mm neck passes through it
-SLOT_LEN = 0.016                   # pry notch length behind the + end stop
+SLOT_LEN = 0.010                   # pry notch length behind the + end stop (short: a cell cannot drop into it)
 PRY_DEPTH = 0.003                  # notch floor sits 3 mm below the pocket floor ...
 PRY_EXT = 0.016                    # ... and the recess continues 16 mm under the + ends
 REAR_LIP = 0.004                   # end-stop thickness between the cover recess and the pocket
@@ -195,7 +195,7 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
                       cell_r=ct.r, cell_len=ct.col_len, cell_pitch=cell_pitch,
                       # arm R grasps the solid section 28 mm behind the pry notch (closer, its fingers disturb the
                       # raised cells; the open pocket must stay clear so the cells can fall out)
-                      grasp_x=max(nx0 - 0.028, -L / 2 + 0.014), hold_x=max(nx0 - 0.028, -L / 2 + 0.014))
+                      grasp_x=max(cx0 - 0.044, -L / 2 + 0.014), hold_x=max(cx0 - 0.044, -L / 2 + 0.014))
     # rating sticker on the exposed underside region (now facing up)
     sx1 = min(-L / 2 + 0.075, nx0 - 0.004)          # keep the sticker clear of the notch
     g.append(_box(f"{p}sticker", (-L / 2 + 0.012, -W / 2 + 0.008, T), (sx1, W / 2 - 0.008, T + 0.0003),

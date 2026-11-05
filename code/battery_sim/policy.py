@@ -36,7 +36,7 @@ import numpy as np
 
 from battery_sim.env import GRIP_CLOSED, GRIP_OPEN, HOME, BatteryRemovalEnv
 from battery_sim.ik import IK
-from battery_sim.scene import BATTERY_BIN, BODY_CRATE, FENCE_X, TOOL_FOOT_ANGLE, TOOL_LEN, TOOL_RACK
+from battery_sim.scene import BATTERY_BIN, BODY_CRATE, FENCE_X, FLIP_AIM, TOOL_FOOT_ANGLE, TOOL_LEN, TOOL_RACK
 
 DT = 0.02                                   # control period (50 Hz)
 PRESS_OFF = np.array([0.012, 0.0, 0.004])   # contact point of the closed jaw tips (tool frame)
@@ -45,7 +45,10 @@ GRASP_DEPTH = 0.016                         # fingertips this far below the devi
 HANDLE_D = 0.022                            # pry-tool handle width across the jaws
 UNLATCH_SHIFT = 0.0062                      # push the cells this far into their springs (lip overhang 4.5 mm; the
                                             # tool's back face must clear the lip end before the lift)
-DROP_LEAD = 0.02                            # sideways travel of a cell sliding out of the rolling device (m)
+FLIP_MIN_UPZ = -0.5                         # flip pose: device turned >= 120 deg
+DROP_H_WEIGHT = 0.25                        # planner cost per metre of drop height (vs. metres off centre)
+DROP_LEAD = 0.0                             # (measured: freed cells land ~7.5 cm from the pocket along the opening's
+                                            # horizontal direction; the bin is long enough on that side instead)
 R_LEAN = np.radians(20.0)                   # main arm grasp approach lean (keeps its wrist clear of the tool arm)
 LEAN = TOOL_FOOT_ANGLE                      # the tool is held leaning back (handle toward arm L) by 10 deg: with a
                                             # vertical tool the SO-101 wrist-flex limit (95 deg) is hit near the jig
@@ -385,7 +388,12 @@ class SkillPolicy:
             # approach leaning back by 20 deg (wrist toward the main arm's base, away from the tool arm working
             # at the pry notch); jaws across the width, wrist camera mount facing away from the tool arm
             ap = R @ np.array([np.sin(lean), 0.0, -np.cos(lean)])
-            axes = {2: ap, 0: -y}
+            if lift:
+                # lifting grasp (tool arm is gone): jaw orientation nearer to the arm's natural wrist roll, which
+                # also puts the pocket on the side the flip planner was validated for
+                axes = {2: ap, 0: y if y[1] < 0 else -y}
+            else:
+                axes = {2: ap, 0: -y}
             self._grasp_axes = axes
             yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
             yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
@@ -465,19 +473,19 @@ class SkillPolicy:
         pd = p + R @ prel
         return pd, Rd, pd[None, :] + corners @ Rd.T, p + R @ comp_off
 
-    def _roll_path(self, q_flip, rel, step_deg=10):
+    def _roll_path(self, q_flip, rel, step_deg=5):
         """Joint path that rolls the device about its long axis (tool y = wrist-flex axis, roll ~ 0)
         with the TCP held fixed, from an upright pose (device up-axis z > 0.7) to q_flip. Both
         rotation directions are tried. Returns [q_upright, ..., q_flip] or None."""
         prel, Rrel, comp_off, corners = rel
         ik = self.R.ik
-        bc = np.array(BATTERY_BIN["center"][:2])
+        bc = np.array(FLIP_AIM)
         top = BATTERY_BIN["center"][2] + BATTERY_BIN["size"][2]
         hb = BATTERY_BIN["size"][0] / 2 + 0.015
         p, R = ik.fk(q_flip)
         pocket = p + R @ comp_off
         yv = R[:, 1]
-        half = BATTERY_BIN["size"][0] / 2 - 0.02
+        half = 0.055 - 0.008                                       # pocket stays over the bin opening
         for sgn in (1, -1):
             path = [q_flip]
             q = q_flip
@@ -485,7 +493,7 @@ class SkillPolicy:
             for k in range(1, int(220 / step_deg) + 1):
                 a_k = _rot(R[:, 2], yv, sgn * np.radians(step_deg * k))
                 q, err, rerr = ik.solve(q, pocket, {2: a_k, 1: yv}, comp_off, iters=120)
-                if err > 0.015 or rerr > 0.08:
+                if err > 0.015 or rerr > 0.15:
                     break
                 _, Rd, cw, comp = self._dev_geom(q, rel)
                 over = np.all(np.abs(cw[:, :2] - bc) < hb, axis=1)
@@ -493,7 +501,7 @@ class SkillPolicy:
                     break
                 if Rd[2, 2] < 0.2 and np.abs(comp[:2] - bc).max() > half:
                     break
-                if self.arm_collides(q) or np.abs(q - path[-1]).max() > np.radians(25):
+                if self.arm_collides(q) or np.abs(q - path[-1]).max() > np.radians(30):
                     break
                 path.append(q)
                 if Rd[2, 2] > self.upright_min:      # upright enough: freed cells stay in the pocket
@@ -506,19 +514,19 @@ class SkillPolicy:
     @staticmethod
     def cells_safe(Rd):
         """Freed cells rest loosely in the pocket with their + ends on the lip tops: they stay in while the
-        device rolls <= 30 deg, tips rear-down <= 20 deg or front-down (toward the spring end) <= 55 deg."""
+        device rolls <= 30 deg, tips rear-down <= 30 deg or front-down (toward the spring end) <= 55 deg."""
         g = Rd.T @ np.array([0.0, 0.0, -1.0])               # gravity in the device frame
         if g[2] > -0.3:
             return False
         roll = np.degrees(np.arctan2(abs(g[1]), -g[2]))
         pitch = np.degrees(np.arctan2(g[0], -g[2]))          # > 0: front (spring end) down
-        return roll <= 30.0 and -20.0 <= pitch <= 55.0
+        return roll <= 30.0 and -30.0 <= pitch <= 55.0
 
     def _upright_path(self, q0, q1, rel, n=25):
         """Joint-space segment check: the freed cells only rest loosely on the lip tops, so the device must stay
         within 30 deg of upright unless its pocket is already above the battery bin."""
-        bc = np.array(BATTERY_BIN["center"][:2])
-        half = BATTERY_BIN["size"][0] / 2 - 0.025
+        bc = np.array(FLIP_AIM)
+        half = 0.055 - 0.025
         for t in np.linspace(0, 1, n):
             q = q0 + (q1 - q0) * t
             _, Rd_, cw_, comp = self._dev_geom(q, rel)
@@ -546,7 +554,7 @@ class SkillPolicy:
         routes.append([swing_first, q_up])
         # carry poses: device kept upright (same approach as when lifted) with the pocket right above the bin
         prel, Rrel, comp_off, corners = rel
-        bc = np.array(BATTERY_BIN["center"][:2])
+        bc = np.array(FLIP_AIM)
         top = BATTERY_BIN["center"][2] + BATTERY_BIN["size"][2]
         _, R0 = ik.fk(q0)
         for h in (0.06, 0.09, 0.12):
@@ -570,7 +578,7 @@ class SkillPolicy:
         closest-to-centre one for which the in-place roll path from upright and an upright transit exist."""
         prel, Rrel, comp_off, corners = rel
         ik = self.R.ik
-        bc = np.array(BATTERY_BIN["center"][:2])
+        bc = np.array(FLIP_AIM)
         top = BATTERY_BIN["center"][2] + BATTERY_BIN["size"][2]
         rng = np.random.default_rng(seed)
         lo, hi = ik.lo.copy(), ik.hi.copy()
@@ -579,7 +587,7 @@ class SkillPolicy:
             q = rng.uniform(lo, hi)
             q[4] = rng.uniform(-0.15, 0.15)
             pd, Rd, cw, comp = self._dev_geom(q, rel)
-            if Rd[2, 2] > -0.64 or cw[:, 2].min() < top + 0.035 or comp[2] > top + 0.30:   # >= 130 deg
+            if Rd[2, 2] > FLIP_MIN_UPZ or cw[:, 2].min() < top + 0.035 or comp[2] > top + 0.30:
                 continue
             # the freed cells slide out through the pocket opening at ~90 deg of roll and keep some sideways
             # speed: aim the expected landing point (pocket + 4 cm along the opening's horizontal direction)
@@ -587,10 +595,13 @@ class SkillPolicy:
             uh = Rd[:2, 2] / max(np.linalg.norm(Rd[:2, 2]), 1e-6)
             d = np.linalg.norm(comp[:2] + DROP_LEAD * uh - bc)
             if d < 0.045 and np.linalg.norm(comp[:2] - bc) < 0.05:
-                cands.append((d + 1.0 * (comp[2] - top), q))
+                cands.append((d + DROP_H_WEIGHT * (comp[2] - top), q))
         cands.sort(key=lambda c: c[0])
+        stats = dict(n=len(cands), collide=0, roll=0, transit=0)
+        self._plan_stats = stats
         for d, q0 in cands[:200]:
             if self.arm_collides(q0):
+                stats["collide"] += 1
                 continue
             # refined variant: pocket exactly above the centre, keeping the tool y axis and device up-axis
             p, R = ik.fk(q0)
@@ -605,8 +616,10 @@ class SkillPolicy:
                     continue
                 path = self._roll_path(q, rel)
                 if path is None:
+                    stats["roll"] += 1
                     continue
                 if self._transit_route(self.R.qcmd.copy(), path[0], rel) is None:
+                    stats["transit"] += 1
                     continue
                 pd, Rd, cw, comp = self._dev_geom(q, rel)
                 return np.linalg.norm(comp[:2] - bc), path, comp, -np.degrees(np.arccos(np.clip(Rd[2, 2], -1, 1)))
@@ -624,7 +637,7 @@ class SkillPolicy:
         rel = (R_tcp.T @ (pd - p_tcp), R_tcp.T @ Rd, R_tcp.T @ (comp - p_tcp), corners)
         plan = self.plan_flip(rel)
         if plan is None:
-            self.say("[R] no reachable flip pose")
+            self.say(f"[R] no reachable flip pose {getattr(self, '_plan_stats', '')}")
             return self.stage("flip_over_bin", False)
         sc, path, comp_w, ang = plan
         q_up, q_flip = path[0], path[-1]
@@ -637,7 +650,7 @@ class SkillPolicy:
         self.say(f"[R] after transit: grasp slip {1000*self.grasp_offset():.0f} mm, cells free {self.cells_free()}")
         cells_before = [env.d.body(f"remote_cell{i}").xpos.copy() for i in range(2)]
         for qk in path[1:]:                                    # roll the device about its long axis
-            yield from A.goto_q(qk, dur=0.35, settle=0.0)
+            yield from A.goto_q(qk, dur=0.2, settle=0.0)
         yield from A.wait(0.4)
         pd, Rd = self.device()
         self.say(f"[R] at flip pose: device up-axis z {Rd[2,2]:.2f}, grasp slip {1000*self.grasp_offset():.0f} mm")
@@ -660,27 +673,40 @@ class SkillPolicy:
         A = self.R
         cc = np.array(BODY_CRATE["center"][:2])
         ctop = BODY_CRATE["center"][2] + BODY_CRATE["size"][2]
+        self.say(f"[R] start crate transfer: device x-axis {np.round(self.device()[1][:, 0], 2)}, grip {self.env.grip_force('R'):.0f} N")
         yield from A.regulate_grip("remote_body", lo=20.0, hi=30.0)   # firm grip for the swing (cells are out)
         q_r = A.qcmd.copy()
         q_r[1] = max(A.ik.lo[1], q_r[1] - np.radians(30))     # raise first so the swing clears both bins
         yield from A.goto_q(q_r, dur=1.2)
+        # drop point: search the crate interior (closer to the arm = reachable with the device level) for a pose
+        # with the device's long axis (= tool y) horizontal along the crate's long side, low over the floor
+        cx0_, cy0_ = BODY_CRATE["center"][:2]
+        hx_, hy_ = BODY_CRATE["size"][0] / 2 - 0.02, BODY_CRATE["size"][1] / 2 - 0.01 - self.L_ / 2
         best = None
-        for h in (0.05, 0.07, 0.09):
-            for axes in ({2: DOWN, 1: (0, 1, 0)}, {2: DOWN, 1: (0, -1, 0)}, {2: DOWN}, {}):
-                for seed in (A.qcmd, HOME):
-                    q, err, rerr = A.ik.solve(seed, [cc[0], cc[1], ctop + h], axes, iters=300)
-                    pen = 0.0 if len(axes) == 2 else (0.004 if len(axes) == 1 else 0.008)
-                    sc = err + pen + 0.002 * (h - 0.05) / 0.02
-                    if best is None or sc < best[0]:
-                        best = (sc, q, err)
+        for h in (0.025, 0.045, 0.07):
+            for xx in np.linspace(cx0_ - hx_, cx0_ + hx_, 4):
+                for yy in np.linspace(cy0_ - hy_, cy0_ + hy_, 3):
+                    for axes, pen in (({2: DOWN, 1: (0, 1, 0)}, 0.0), ({2: DOWN, 1: (0, -1, 0)}, 0.0),
+                                      ({1: (0, 1, 0)}, 0.002), ({1: (0, -1, 0)}, 0.002)):
+                        for seed in (A.qcmd, HOME):
+                            q, err, rerr = A.ik.solve(seed, [xx, yy, ctop + h], axes, iters=200)
+                            _, Rq = A.ik.fk(q)
+                            level = abs(Rq[2, 1])                     # device long axis must stay level
+                            sc = err + pen + 0.03 * level + 0.002 * (h - 0.025) / 0.02
+                            if best is None or sc < best[0]:
+                                best = (sc, q, err)
         _, q_c, err = best
         self.say(f"[R] crate pose ik err {1000*err:.1f} mm")
         q_swing = A.qcmd.copy()
         q_swing[0] = q_c[0]
         yield from A.goto_q(q_swing, dur=2.2)
+        self.say(f"[R] after swing: device x-axis {np.round(self.device()[1][:, 0], 2)}")
         yield from A.goto_q(q_c, dur=1.6, settle=0.3)
+        self.say(f"[R] at crate pose: device x-axis {np.round(self.device()[1][:, 0], 2)}")
         yield from A.grip(GRIP_OPEN, 0.8)
         yield from A.wait(0.6)
+        self.say(f"[R] released over the crate: device x-axis {np.round(self.device()[1][:, 0], 2)} at {np.round(self.device()[0], 3)}, jaw "
+                 f"{self.env.d.qpos[A.io.gq]:.2f} rad, contact {self.env.grip_force('R'):.1f} N")
         q_up = A.qcmd.copy()
         q_up[1] = max(A.ik.lo[1], q_up[1] - np.radians(25))
         yield from A.goto_q(q_up, dur=0.8, settle=0.5)
@@ -880,16 +906,16 @@ class SkillPolicy:
             yield from A.move(P(cx0 + 0.001, z) + yd * ybal, axes, off, speed=0.006, settle=0.1)
             yield from A.move(P(cx0 + 0.001, cz - 0.0035), axes, off, speed=0.006, settle=0.1)
             self.phase("pry_set_down")
-            yield from A.move(P(cx0 - 0.011, cz - 0.0035), axes, off, speed=0.008, settle=0.1)
+            yield from A.move(P(cx0 - 0.0088, cz - 0.0035), axes, off, speed=0.008, settle=0.1)
             axes = axes_push
         else:                    # ablation: push only, then withdraw
             yield from A.move(P(x_in, z_low), axes, off, speed=0.006, settle=0.1)
             axes = axes_push
             yield from A.move(P(x_in, z_low), axes, off, speed=0.02, min_time=0.6, settle=0.1)
-            yield from A.move(P(cx0 - 0.011, z_low), axes, off, speed=0.006, settle=0.1)
-        yield from A.move(P(cx0 - 0.011, T + 0.004), axes, off, speed=0.02, settle=0.1)
+            yield from A.move(P(cx0 - 0.0088, z_low), axes, off, speed=0.006, settle=0.1)
+        yield from A.move(P(cx0 - 0.0088, T + 0.004), axes, off, speed=0.02, settle=0.1)
         # leave sideways (-y, toward the tool holder): the raised + ends now stick up above the device top
-        yield from A.move(self.local(cx0 - 0.011, -(self.W / 2 + 0.02), T + 0.006), axes, off, speed=0.03, settle=0.3)
+        yield from A.move(self.local(cx0 - 0.0088, -(self.W / 2 + 0.02), T + 0.006), axes, off, speed=0.03, settle=0.3)
         self.phase("pry_done")
         st = self.cell_state()
         free = self.cells_free()
