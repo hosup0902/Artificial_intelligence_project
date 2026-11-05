@@ -1,0 +1,402 @@
+[
+ {
+  "seed": 20,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.66,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=44.69s",
+  "sim_time": 68.56,
+  "steps": 34280,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 32.2
+ },
+ {
+  "seed": 21,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.88,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=46.57s",
+  "sim_time": 70.5,
+  "steps": 35250,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 33.9
+ },
+ {
+  "seed": 22,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.66,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=53.83s",
+  "sim_time": 77.7,
+  "steps": 38850,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 40.2
+ },
+ {
+  "seed": 23,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.66,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=49.65s",
+  "sim_time": 73.52,
+  "steps": 36760,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 35.7
+ },
+ {
+  "seed": 24,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.48,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=46.65s",
+  "sim_time": 70.52,
+  "steps": 35260,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 30.7
+ },
+ {
+  "seed": 25,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.54,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=53.53s",
+  "sim_time": 77.46,
+  "steps": 38730,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 41.2
+ },
+ {
+  "seed": 26,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.69,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=51.07s",
+  "sim_time": 74.94,
+  "steps": 37470,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 33.7
+ },
+ {
+  "seed": 27,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.64,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=52.83s",
+  "sim_time": 76.7,
+  "steps": 38350,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 39.8
+ },
+ {
+  "seed": 28,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.56,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=46.63s",
+  "sim_time": 70.5,
+  "steps": 35250,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 29.7
+ },
+ {
+  "seed": 29,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.52,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=47.03s",
+  "sim_time": 70.9,
+  "steps": 35450,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 33.2
+ },
+ {
+  "seed": 30,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.33,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=50.99s",
+  "sim_time": 74.92,
+  "steps": 37460,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 33.7
+ },
+ {
+  "seed": 31,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.51,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=46.59s",
+  "sim_time": 70.46,
+  "steps": 35230,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 30.2
+ },
+ {
+  "seed": 32,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.56,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=47.15s",
+  "sim_time": 71.08,
+  "steps": 35540,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 36.7
+ },
+ {
+  "seed": 33,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.83,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=47.33s",
+  "sim_time": 71.26,
+  "steps": 35630,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 34.9
+ },
+ {
+  "seed": 34,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.55,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=50.01s",
+  "sim_time": 73.94,
+  "steps": 36970,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 37.3
+ },
+ {
+  "seed": 35,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.62,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=47.39s",
+  "sim_time": 71.26,
+  "steps": 35630,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 31.0
+ },
+ {
+  "seed": 36,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.59,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=43.37s",
+  "sim_time": 67.3,
+  "steps": 33650,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 30.1
+ },
+ {
+  "seed": 37,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.98,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=47.95s",
+  "sim_time": 72.0,
+  "steps": 36000,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 37.4
+ },
+ {
+  "seed": 38,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.62,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=46.73s",
+  "sim_time": 70.6,
+  "steps": 35300,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 33.1
+ },
+ {
+  "seed": 39,
+  "device": "stb_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.59,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=52.09s",
+  "sim_time": 75.96,
+  "steps": 37980,
+  "failed_stage": null,
+  "tool_returned": true,
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 35.2
+ }
+]

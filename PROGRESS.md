@@ -102,4 +102,8 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - 데모: `code/live_demo.py`(대화형 뷰어, Space 일시정지, 배속, 단계 표시, --mode no_tool/push_only), `code/DEMO_GUIDE.md`. 사용자가 직접 촬영 예정(영상 생성 불필요).
 - 보고서 자료: 저장소 루트 `REPORT_MATERIAL.md` (최종 결과 11장은 평가 후 기입).
 - eval19: STB 20/20, light 18/20, TV 19/20, AC 11/14(중단). 원인: AAA 셀이 블레이드 모서리를 돌아 탈출(→ pitch 14), 두꺼운 기기에서 notch 위 수직 자세 도달 불가(→ 조건부).
-- [진행중] eval20 (`code/dev_tools/_out/eval20/`).
+- ✅ **eval20: 80/80** (4기기 × seed 0-19, 모두 pry 1회 성공, 최대 접촉력 ≤ 32.6 N). 결과 `code/renders/eval_bimanual_<dev>.json`.
+- ✅ held-out seed 20-39: 79/80 (AC seed 20 실패: 들어올리는 동안 셀 − 끝도 같이 들려 스프링 접점판을 넘어감. 미수정, 개선안은 REPORT_MATERIAL 11.2). 결과 `code/renders/heldout/`.
+- ✅ 대조실험(최종 설계, seed 0-4 × 4기기): no_tool 0/20, push_only 0/20 (셀 0/40씩).
+- README·DEMO_GUIDE(추천 seed: TV 5, STB 9, AC 5, light 15)·REPORT_MATERIAL 11장 갱신. 생성 파일(battery_scene.xml, remote_shell_*.obj)은 git 추적 해제.
+- 남은 선택 작업: AC seed 20 대책(− 끝 높이 감시), 공구 반납 개선, render_scene.py로 최종 그림 재생성(현재 renders/의 일부 그림은 중간발표용).

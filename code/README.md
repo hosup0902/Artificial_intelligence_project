@@ -23,11 +23,11 @@ the springs does **not** release them (see the ablations below); they have to be
 | experiment | command | result |
 |---|---|---|
 | full bimanual policy, 4 devices × seeds 0-19 | `python run_episode.py --seeds 0-19 --device <dev>` | **80/80** (each device 20/20), every pry on the first attempt; peak contact force on the device mean 25.4 N, max 32.6 N; mean episode 69.9 s sim (34 951 physics steps); tool returned to its holder 76/80 |
-| held-out seeds 20-39 (never used during development) | `python run_episode.py --seeds 20-39 --device <dev>` | see `REPORT_MATERIAL.md` §11 |
+| held-out seeds 20-39 (never used during development) | `python run_episode.py --seeds 20-39 --device <dev>` | 79/80 (TV, STB, light 20/20; AC 19/20 — seed 20: a cell's − end rides over its spring contact while lifting) |
 | ablation: no tool (just flip + shake) | `python ablation.py --mode no_tool --seeds 0-4` | 0/20, cells in bin 0/40 |
 | ablation: push into springs, no lift | `python ablation.py --mode push_only --seeds 0-4` | 0/20, cells in bin 0/40 |
 
-Per-episode results: `renders/eval_bimanual_<device>.json`, `renders/ablation_<mode>.json`.
+Per-episode results: `renders/eval_bimanual_<device>.json`, `renders/heldout/eval_heldout_<device>.json`, `renders/ablation_<mode>.json`.
 
 ## Setup (Python 3.12)
 
