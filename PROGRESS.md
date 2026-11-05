@@ -101,4 +101,5 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - hold 파지: `_hold_descend` = IK 목표 사전 보정(FK가 원하는 고정 조 위치가 될 때까지 목표 이동) + 관절공간 이동, 20° 유지, 움직이는 조 힘 <1.5 N이면 2 mm 바깥 재시도(AC 제외).
 - 데모: `code/live_demo.py`(대화형 뷰어, Space 일시정지, 배속, 단계 표시, --mode no_tool/push_only), `code/DEMO_GUIDE.md`. 사용자가 직접 촬영 예정(영상 생성 불필요).
 - 보고서 자료: 저장소 루트 `REPORT_MATERIAL.md` (최종 결과 11장은 평가 후 기입).
-- [진행중] eval19 (`code/dev_tools/_out/eval19/`).
+- eval19: STB 20/20, light 18/20, TV 19/20, AC 11/14(중단). 원인: AAA 셀이 블레이드 모서리를 돌아 탈출(→ pitch 14), 두꺼운 기기에서 notch 위 수직 자세 도달 불가(→ 조건부).
+- [진행중] eval20 (`code/dev_tools/_out/eval20/`).
