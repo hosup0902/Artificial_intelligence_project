@@ -55,7 +55,7 @@ class CellType:
 
 
 AA = CellType("AA", 0.00725, 0.0505, 0.023, 0.016, 0.0025)       # 1.5 mm rib; lowest lines at |y| = 8 mm
-AAA = CellType("AAA", 0.00525, 0.0445, 0.0115, 0.019, 0.0012, 150.0)   # lowest lines at |y| = 9.5 mm
+AAA = CellType("AAA", 0.00525, 0.0445, 0.0115, 0.016, 0.0012, 150.0)   # lowest lines at |y| = 8 mm (= AA: tool foot edge)
 AA_R, AA_L, AA_MASS = AA.r, AA.length, AA.mass
 SPRING_K = 400.0                   # N/m coil spring (1.5 mm preload -> 0.6 N; ~3 N when pushed past the lip)
 SPRING_STROKE = 0.0100             # plunger travel beyond the seated position
