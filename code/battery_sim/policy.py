@@ -356,7 +356,7 @@ class SkillPolicy:
         A = self.R
         yield from A.move(A.tool(PRESS_OFF)[0] + [0, 0, 0.05], {2: DOWN}, PRESS_OFF, speed=0.06, settle=0.05)
 
-    def grasp_device(self, lift=True, gx=None):
+    def grasp_device(self, lift=True, gx=None, lean=0.0):
         """Top grasp of the solid rear section across the device width (force-limited). With lift=False the
         device stays on the jig, held firmly while the tool arm pries (the second hand of a human worker)."""
         A = self.R
@@ -368,7 +368,7 @@ class SkillPolicy:
             top = p[2] + self.T
             # approach leaning back by 20 deg (wrist toward the main arm's base, away from the tool arm working
             # at the pry notch); jaws across the width, wrist camera mount facing away from the tool arm
-            ap = R @ np.array([np.sin(R_LEAN), 0.0, -np.cos(R_LEAN)])
+            ap = R @ np.array([np.sin(lean), 0.0, -np.cos(lean)])
             axes = {2: ap, 0: -y}
             self._grasp_axes = axes
             yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
@@ -840,6 +840,7 @@ class SkillPolicy:
     def return_tool(self):
         """Slide the tool back into the fork holder (handle 4 mm above the plate), lower it, let go."""
         A = self.L
+        self.calibrate_tool()                                 # the tool may have turned a little in the hand
         Rt_des = np.array([[-1, 0, 0], [0, -1, 0], [0, 0, 1.0]])   # foot -> world -x, as it was in the holder
         axes = self.tool_axes(Rt_des)
         off = self.tool_rel[0]
@@ -848,9 +849,17 @@ class SkillPolicy:
         rest = TOOL_RACK["plate_z"] + 0.0005 - TOOL_LEN["tip_to_collar"]
         yield from A.goto([tip_x - 0.045, cy, 0.03], self.tool_axes(lean_frame(Rt_des, -LEAN)), off, dur=1.6,
                           settle=0.1)                          # clear of the jig fence (leaning: reachable)
-        yield from A.move([tip_x - 0.045, cy, rest + 0.004], axes, off, speed=0.03, settle=0.1)
-        yield from A.move([tip_x, cy, rest + 0.004], axes, off, speed=0.03, settle=0.1)
-        yield from A.move([tip_x, cy, rest], axes, off, speed=0.01, settle=0.2)
+        entry = np.array([tip_x - 0.045, cy, rest + 0.004])
+        yield from A.move(entry, axes, off, speed=0.03, settle=0.1)
+        bias = np.zeros(3)
+        for _ in range(3):                                    # closed loop on the measured tip before sliding in
+            err = entry - self.env.d.site("pry_tip").xpos
+            if np.linalg.norm(err) < 0.0004:
+                break
+            bias += np.clip(err, -0.008, 0.008)
+            yield from A.move(entry + bias, axes, off, speed=0.01, min_time=0.1, settle=0.15)
+        yield from A.move([tip_x, cy, rest + 0.004] + bias, axes, off, speed=0.03, settle=0.1)
+        yield from A.move([tip_x, cy, rest] + bias, axes, off, speed=0.01, settle=0.2)
         yield from A.grip(GRIP_OPEN, 0.6)
         yield from A.move(A.tool()[0] + [0, 0, 0.03], {}, speed=0.05, settle=0.2)
         pt, _ = self.tool_pose()
@@ -912,7 +921,7 @@ class SkillPolicy:
         if ok and tool_ok:
             self.run_par(self.tool_standby())
             if self.hold:                                       # hold the device firmly on the jig by its rear end
-                self.run_par(self.grasp_device(lift=False))
+                self.run_par(self.grasp_device(lift=False, lean=R_LEAN))
             pried = False
             for k in range(3):
                 pried = self.run_par(self.pry_cells(attempt=k))
