@@ -1,0 +1,172 @@
+[
+ {
+  "seed": 0,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 26.25,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=46.79s",
+  "sim_time": 70.72,
+  "steps": 35360,
+  "failed_stage": "return_tool",
+  "wall": 42.8
+ },
+ {
+  "seed": 1,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 28.18,
+  "peak_info": "fixed_jaw_box3 | remote_rear at t=21.15s",
+  "sim_time": 72.4,
+  "steps": 36200,
+  "failed_stage": null,
+  "wall": 37.7
+ },
+ {
+  "seed": 2,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 26.46,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=50.03s",
+  "sim_time": 73.9,
+  "steps": 36950,
+  "failed_stage": null,
+  "wall": 37.0
+ },
+ {
+  "seed": 3,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 26.29,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=48.35s",
+  "sim_time": 72.22,
+  "steps": 36110,
+  "failed_stage": "return_tool",
+  "wall": 41.9
+ },
+ {
+  "seed": 4,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 24.4,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=43.21s",
+  "sim_time": 67.08,
+  "steps": 33540,
+  "failed_stage": null,
+  "wall": 33.4
+ },
+ {
+  "seed": 5,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.77,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=43.17s",
+  "sim_time": 67.04,
+  "steps": 33520,
+  "failed_stage": null,
+  "wall": 32.3
+ },
+ {
+  "seed": 6,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 26.24,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=44.53s",
+  "sim_time": 68.4,
+  "steps": 34200,
+  "failed_stage": "return_tool",
+  "wall": 47.8
+ },
+ {
+  "seed": 7,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.65,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=43.55s",
+  "sim_time": 67.42,
+  "steps": 33710,
+  "failed_stage": null,
+  "wall": 39.1
+ },
+ {
+  "seed": 8,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 25.88,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=43.67s",
+  "sim_time": 67.54,
+  "steps": 33770,
+  "failed_stage": null,
+  "wall": 32.0
+ },
+ {
+  "seed": 9,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 26.55,
+  "peak_info": "moving_jaw_box3 | remote_rear at t=43.81s",
+  "sim_time": 67.68,
+  "steps": 33840,
+  "failed_stage": "return_tool",
+  "wall": 45.7
+ }
+]

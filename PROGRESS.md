@@ -60,11 +60,10 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 
 ## 4. 현재 상태 / 남은 문제 (최신이 위)
 
-- ✅ **eval7 (4기기 × seed 0-2): 10/12 성공** — TV 3/3, AC 3/3, STB 2/3, 조명 2/3. 실패 2건 모두 `pry_cells`(STB seed0, light seed1). 피크 접촉력 26~34 N (STB seed0 42.5 N).
-- 이번에 해결한 것(뒤집기): ① roll 경로를 5° 단계로(10° 단계에서 관절 변화 >25°로 거부되던 문제), ② 운반 중 셀 쏟아짐 조건을 방향별로(`cells_safe`: 옆 30°, 뒤 30°, 앞 55°), ③ 셀은 회전 중 개구부 방향(−y)으로 약 0.35 m/s로 미끄러져 7 cm 앞에 떨어짐(측정) → 수거함을 그 방향으로 연장(11×17 cm, 중심 (0.12,0.30)), 플래너 조준점은 `FLIP_AIM=(0.12,0.33)` 유지, ④ 크레이트 투하: 크레이트 내부 격자 탐색으로 기기를 수평(긴 축 y)으로 놓을 수 있는 자세 선택, ⑤ L이 먼저 물러난 뒤 R 재파지(순차) → R 비행 ∥ L 공구 반납, ⑥ 손가락 고무패드(비틀림 마찰 0.02), ⑦ notch 길이 10 mm(셀이 홈에 빠지던 문제).
-- [진행중] pry 간헐 실패 원인 분석.
-- [미해결] return_tool(거치대 꽂기) 자주 실패(성공 판정 무관).
-- [미착수] seed 다수(기기당 10+) 평가, ablation(공구 없음/들어올리기 없음), README·render 스크립트 갱신, 디버그 출력 정리.
+- ✅✅ **eval10: 40/40 성공** (4기기 × seed 0-9; TV/STB/AC/조명 각 10/10). 기기별 최대 피크 접촉력 28~33 N(기준 40 N).
+  결과 파일: `code/renders/eval_bimanual_<device>.json` (원본 로그 `code/dev_tools/_out/eval10/`).
+  - 직전 수정: 포켓 깊이 = 셀+1.9 mm(기기별 바닥 두께), 셀 밑 recess 폭 ±9.0(셀 최저선이 가장자리에 걸림), AAA 간격 18 mm·스프링 200 N/m·예압 0.6 N(가벼운 AAA 셀이 스프링에 튕겨 나가던 문제), **그리퍼 서보 힘 제한**(잡는 동안 18~30 N 유지; 뒤집힌 채 들 때 98 N까지 오르던 문제), 흔들기/들기 완화.
+- 다음 할 일: ① ablation(`python ablation.py --mode no_tool|push_only`) — 둘 다 실패해야 함, ② seed 10-19 추가 평가, ③ return_tool(거치대 꽂기) 개선(성공 판정 무관, `failed_stage`에서 제외하고 `tool_returned`로 기록), ④ 구 스크립트 정리(`ablation_no_unlatch.py`, `unlatch_experiment.py`, `render_latch_states.py`, `latch_test.py`는 중간발표 pop-up 설계용), README 갱신, 영상 생성.
 
 ## 5. 작업 로그
 
@@ -75,3 +74,4 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - **TV seed 0 전체 성공** (2026-11-05).
 - 4기기 평가 시작. flip 플래너 개선(후보 확대, 착지점 조준, 낮은 높이 선호), 그립 조절(regulate_grip), 수거함 확대(15×15), L이 먼저 물러난 뒤 R 재파지(순차), 운반 중 셀 안전 조건, 손가락 패드.
 - 뒤집기 문제 해결 → eval7 10/12 성공.
+- **eval10 40/40 성공** (기기당 10 seed).

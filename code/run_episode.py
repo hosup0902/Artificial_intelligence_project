@@ -58,13 +58,15 @@ def main():
         final = {}
         for n, _, ok in env.log.stages:
             final[n] = ok
-        # reseat_on_fence is advisory (the slid-off cover can end up between the device and the fence)
-        failed = next((n for n, ok in final.items() if not ok and n != "reseat_on_fence"), None)
+        # advisory stages (not part of the success criterion): reseat_on_fence, return_tool (tool back in its holder)
+        advisory = ("reseat_on_fence", "return_tool")
+        failed = next((n for n, ok in final.items() if not ok and n not in advisory), None)
         r = dict(seed=sd, device=dev, success=bool(rep.success), cells_in_bin=[bool(c) for c in rep.cells_in_battery_bin],
                  body_in_crate=bool(rep.body_in_crate), cell_in_crate=bool(rep.cell_in_crate),
                  peak_force=round(float(env.log.peak_force), 2), peak_info=env.log.peak_info,
                  sim_time=round(float(env.d.time), 2), steps=int(round(env.d.time / env.m.opt.timestep)),
-                 failed_stage=failed, wall=round(time.time() - t0, 1))
+                 failed_stage=failed, tool_returned=bool(final.get("return_tool", False)),
+                 wall=round(time.time() - t0, 1))
         results.append(r)
         print(json.dumps(r, ensure_ascii=False))
         if args.video:
