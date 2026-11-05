@@ -352,10 +352,10 @@ def _tool_xml():
     """Thin steel pry tool (spudger / thin-blade battery opener) with a moulded handle, in its holder.
 
     Tool frame: origin at the tip, +z toward the handle, +x = direction the hooked foot points.
-      blade  : 12.6 mm wide (y) x 1.2 mm thick (x) spring steel, z in [0, 0.0245]
+      blade  : 0.8 mm thick (x) spring steel: 16.8 mm wide (y) for z in [0, 0.0125], 8 mm wide neck up to 0.0245
       foot   : 5 mm hook at the tip, bent toward +x (and 10 deg up), 1.0 mm thick (gets under a cell's + end)
       shank  : z in [0.0245, 0.033]
-      handle : 11 (x) x 18 (y) mm moulded grip, z in [0.033, 0.088]; its lower face rests on the holder
+      handle : 11 (x) x 22 (y) mm moulded grip, z in [0.033, 0.088]; its lower face rests on the holder
     """
     tl = TOOL_LEN["tip_to_collar"]
     hl = TOOL_LEN["handle"]
@@ -363,22 +363,25 @@ def _tool_xml():
     z = TOOL_RACK["plate_z"] + 0.002 - tl          # tip height when the handle rests on the plate
     steel = 'material="tool_steel" friction="0.25 0.005 0.0001" solref="0.005 1"'
     u = np.array([np.cos(TOOL_FOOT_ANGLE), 0.0, np.sin(TOOL_FOOT_ANGLE)])
-    foot_c = np.array([-0.0006, 0.0, 0.0005]) + 0.0028 * u
-    grip = 'material="tool_handle" friction="1.0 0.005 0.0001"'
+    foot_c = np.array([-0.0004, 0.0, 0.0005]) + 0.0028 * u
+    grip = 'material="tool_handle" friction="1.0 0.02 0.0001"'   # rubber grip: large contact patch (torsion)
     g = [
-        f'<geom name="pry_blade" type="box" pos="0 0 0.0125" size="0.0006 0.0063 0.0120" {steel} mass="0.004"/>',
+        # T-shaped tip: wide lower blade (pushes both + end faces, foot reaches under both cells), narrow neck
+        # above it that passes between the retaining lips
+        f'<geom name="pry_blade" type="box" pos="0 0 0.0065" size="0.0004 0.0084 0.0060" {steel} mass="0.002"/>',
+        f'<geom name="pry_neck" type="box" pos="0 0 0.0185" size="0.0004 0.0040 0.0060" {steel} mass="0.001"/>',
         # hooked foot, bent up by TOOL_FOOT_ANGLE so that it is level while the tool leans back by that angle
         f'<geom name="pry_foot" type="box" pos="{_f(*foot_c)}" euler="0 {-TOOL_FOOT_ANGLE:.4f} 0" '
-        f'size="0.0028 0.0063 0.0005" {steel} mass="0.0005"/>',
+        f'size="0.0028 0.0084 0.0005" {steel} mass="0.0006"/>',
         f'<geom name="pry_shank" type="box" pos="0 0 {0.0245 + (tl - 0.0245) / 2:.4f}" size="0.0012 0.0040 {(tl - 0.0245) / 2:.4f}" '
         f'{steel} mass="0.002"/>',
-        f'<geom name="pry_handle" type="box" pos="0 0 {tl + hl / 2:.4f}" size="0.0055 0.009 {hl / 2:.4f}" {grip} mass="0.014"/>',
+        f'<geom name="pry_handle" type="box" pos="0 0 {tl + hl / 2:.4f}" size="0.0055 0.011 {hl / 2:.4f}" {grip} mass="0.016"/>',
         # visual details: grip ribs and an end cap
-        *[f'<geom type="box" pos="{_f(0, 0, tl + 0.016 + 0.008 * k)}" size="0.0058 0.0093 0.0012" material="tool_rib" '
+        *[f'<geom type="box" pos="{_f(0, 0, tl + 0.016 + 0.008 * k)}" size="0.0058 0.0113 0.0012" material="tool_rib" '
           f'contype="0" conaffinity="0" group="1"/>' for k in range(4)],
-        f'<geom type="box" pos="0 0 {tl + hl - 0.002:.4f}" size="0.0058 0.0093 0.002" material="tool_rib" contype="0" '
+        f'<geom type="box" pos="0 0 {tl + hl - 0.002:.4f}" size="0.0058 0.0113 0.002" material="tool_rib" contype="0" '
         f'conaffinity="0" group="1"/>',
-        f'<site name="pry_tip" pos="0.0006 0 0.0005" size="0.001" group="4"/>',
+        f'<site name="pry_tip" pos="0.0004 0 0.0005" size="0.001" group="4"/>',
     ]
     # tool hangs with its foot pointing to world -x (along the open side of the holder slot)
     q = (0.0, 0.0, 0.0, 1.0)
@@ -390,7 +393,7 @@ def _rack_xml():
     """Bench-top fork tool holder: aluminium plate with a slot open toward -x, on two side posts."""
     cx, cy = TOOL_RACK["center"]
     pz = TOOL_RACK["plate_z"]
-    hy = 0.0076                                 # slot half width: the 12.6 mm blade passes, the 18 mm handle rests
+    hy = 0.0093                                 # slot half width: the 16.8 mm blade passes, the 22 mm handle rests
     xb = cx + 0.0030                            # closed end of the slot (blade face + 2.4 mm)
     t = 0.003
     al = 'friction="0.4 0.005 0.0001"'

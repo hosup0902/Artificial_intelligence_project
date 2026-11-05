@@ -16,7 +16,11 @@ def cb(name):
     st = pol.cell_state()
     tp = d.site("pry_tip").xpos; p, R = pol.device()
     print(f"   {name}: cells {[(round(1000*a,1), round(1000*b,1), round(c,1)) for a,b,c in st]}  tip(dev) {np.round(1000*(R.T@(tp-p)) - [1000*pol.dm['cx0'],0,0],1)}")
-    cnt[0] += 1; views(env, f"{SP}/pry_{cnt[0]:02d}_{name}.png", [(pl + [0.006, 0, 0.004], 0.06, 90, -3), (pl + [0.006, 0, 0.004], 0.06, 270, -3), (pl + [0.01, 0, 0], 0.07, 180, -60)],
+    cnt[0] += 1
+    if name in ("pry_approach", "pry_above"):
+        print("      device", np.round(1000 * d.body("remote_body").xpos, 1))
+        views(env, f"{SP}/pry_{cnt[0]:02d}_{name}_wide.png", ["hero", (pl, 0.3, 200, -30), (pl, 0.3, 120, -20)])
+    views(env, f"{SP}/pry_{cnt[0]:02d}_{name}.png", [(pl + [0.006, 0, 0.004], 0.06, 90, -3), (pl + [0.006, 0, 0.004], 0.06, 270, -3), (pl + [0.01, 0, 0], 0.07, 180, -60)],
           collision=False)
 pol.on_phase = cb
 ok = pol.run_par(pol.pry_cells(0))

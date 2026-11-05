@@ -10,10 +10,10 @@ def save(dev, seed):
     env = BatteryRemovalEnv(device=dev); env.reset(seed)
     pol = SkillPolicy(env, verbose=False)
     ok, tok = pol.run_par(pol._main_prep(), pol._tool_prep())
-    pol.run_par(pol.tool_standby()); pol.run_par(pol.hold_device())
+    pol.run_par(pol.tool_standby()); pol.run_par(pol.grasp_device(lift=False))
     st = np.zeros(mujoco.mj_stateSize(env.m, SPEC)); mujoco.mj_getState(env.m, env.d, st, SPEC)
     blob = dict(state=st, R=(pol.R.qcmd, pol.R.grip_cmd), L=(pol.L.qcmd, pol.L.grip_cmd), tool_rel=pol.tool_rel,
-                log=env.log, cover_seat=pol.cover_seat)
+                log=env.log, cover_seat=pol.cover_seat, extra=dict(_holding=pol._holding, _grasp_axes=pol._grasp_axes))
     pickle.dump(blob, open(f"{SP}/snap_{dev}_{seed}.pkl", "wb"))
     print("saved", ok, tok, env.d.time)
 def load(dev, seed, verbose=True):
@@ -23,6 +23,7 @@ def load(dev, seed, verbose=True):
     mujoco.mj_setState(env.m, env.d, b["state"], SPEC); mujoco.mj_forward(env.m, env.d)
     pol.R.qcmd, pol.R.grip_cmd = b["R"]; pol.L.qcmd, pol.L.grip_cmd = b["L"]
     pol.tool_rel = b["tool_rel"]; env.log = b["log"]; pol.cover_seat = b["cover_seat"]
+    for k, v in b.get("extra", {}).items(): setattr(pol, k, v)
     env.set_ctrl(pol.R.qcmd, pol.R.grip_cmd, "R"); env.set_ctrl(pol.L.qcmd, pol.L.grip_cmd, "L")
     return env, pol
 if __name__ == "__main__":

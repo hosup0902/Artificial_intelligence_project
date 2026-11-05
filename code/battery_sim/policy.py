@@ -42,8 +42,10 @@ DT = 0.02                                   # control period (50 Hz)
 PRESS_OFF = np.array([0.012, 0.0, 0.004])   # contact point of the closed jaw tips (tool frame)
 DOWN = np.array([0.0, 0.0, -1.0])
 GRASP_DEPTH = 0.016                         # fingertips this far below the device top (device is 22 mm thick)
-HANDLE_W = 0.011                            # pry-tool handle thickness across the jaws
-UNLATCH_SHIFT = 0.0052                      # push the cells this far into their springs (lip overhang 4.5 mm)
+HANDLE_D = 0.022                            # pry-tool handle width across the jaws
+UNLATCH_SHIFT = 0.0062                      # push the cells this far into their springs (lip overhang 4.5 mm; the
+                                            # tool's back face must clear the lip end before the lift)
+R_LEAN = np.radians(20.0)                   # main arm grasp approach lean (keeps its wrist clear of the tool arm)
 LEAN = TOOL_FOOT_ANGLE                      # the tool is held leaning back (handle toward arm L) by 10 deg: with a
                                             # vertical tool the SO-101 wrist-flex limit (95 deg) is hit near the jig
 
@@ -304,24 +306,49 @@ class SkillPolicy:
         press = 0.0025 + 0.0015 * attempt                    # how far below the ridge top we command
         yield from A.goto(ridge + [0, 0, 0.04], axes, PRESS_OFF, grip=GRIP_CLOSED)
         yield from A.move(ridge - [0, 0, press], axes, PRESS_OFF, speed=0.03, settle=0.15)
+        self.phase("slide_pressed")
         for k in range(4):                                   # drag in segments, re-pressing each time
             tgt = ridge + x * (0.022 * (k + 1)) - [0, 0, press]
             yield from A.move(tgt, axes, PRESS_OFF, speed=0.025, settle=0.05)
+            self.phase(f"slide_seg{k}")
         yield from A.move(A.tool(PRESS_OFF)[0] + [0, 0, 0.06], axes, PRESS_OFF, speed=0.08, settle=0.4)
         off, dz = self.cover_offset()
         self.say(f"[R] latch released: {self.env.log.latch_released_at is not None}, cover offset {1000*off:.1f} mm, "
                  f"dz {1000*dz:.1f} mm")
-        return self.stage("slide_cover", off > 0.050 or dz < -0.005 or dz > 0.03)
+        if dz > self.T + 0.01:
+            # the slid-off cover is wedged between the closed fingers: drop it on the mat beyond the fence
+            yield from self.drop_cover()
+        return self.stage("slide_cover", self.cover_clear())
+
+    def cover_clear(self):
+        """The cover is off the device: not lying on it / in the recess (it must not block the pry notch)."""
+        p, R = self.device()
+        pc, _ = self.env.body_pose("remote_cover")
+        loc = R.T @ (pc - p)
+        on_device = abs(loc[0]) < self.L_ / 2 + 0.01 and abs(loc[1]) < self.W / 2 + 0.01 and loc[2] > -0.005
+        return not on_device
+
+    def drop_cover(self):
+        A = self.R
+        p, R = self.device()
+        drop = np.array([FENCE_X + 0.045, p[1] + 0.03, 0.07])
+        yield from A.goto(drop, {2: DOWN}, PRESS_OFF, dur=1.0, settle=0.1)
+        yield from A.grip(GRIP_OPEN, 0.5)
+        yield from A.wait(0.4)
+        yield from A.grip(GRIP_CLOSED, 0.4)
+        self.say(f"[R] cover dropped beyond the fence at {np.round(self.env.body_pose('remote_cover')[0], 3)}")
 
     def hold_device(self):
         """Press the rear end of the device down onto the jig with the closed jaw tips (the other hand
         pries); the device is braced against the fence along +x."""
         A = self.R
         p, R = self.device()
-        pt = p + R @ [-self.L_ / 2 + 0.011, 0, self.T]
+        # press on the rear end (closer to the notch the two grippers would touch)
+        hx = -self.L_ / 2 + 0.012
+        pt = p + R @ [hx, 0, self.T]
         axes = {2: DOWN, 0: -R[:, 1]}            # wrist camera mount faces away from the tool arm
         yield from A.goto(pt + [0, 0, 0.03], axes, PRESS_OFF, grip=GRIP_CLOSED)
-        e = yield from A.move(pt - [0, 0, 0.002], axes, PRESS_OFF, speed=0.03, settle=0.2)
+        e = yield from A.move(pt - [0, 0, 0.0045], axes, PRESS_OFF, speed=0.03, settle=0.2)
         self.say(f"[R] holding the device down at its rear end (ik {1000*e:.1f} mm)")
         return self.stage("hold_device", e < 0.005)
 
@@ -329,22 +356,36 @@ class SkillPolicy:
         A = self.R
         yield from A.move(A.tool(PRESS_OFF)[0] + [0, 0, 0.05], {2: DOWN}, PRESS_OFF, speed=0.06, settle=0.05)
 
-    def grasp_device(self):
+    def grasp_device(self, lift=True, gx=None):
+        """Top grasp of the solid rear section across the device width (force-limited). With lift=False the
+        device stays on the jig, held firmly while the tool arm pries (the second hand of a human worker)."""
         A = self.R
-        p, R = self.device()
-        x, y = R[:, 0], R[:, 1]
-        c = p + R @ [self.grasp_x, 0, 0]                      # just behind the pocket, near the centre of mass
-        top = p[2] + self.T
-        axes = {2: DOWN, 0: y if y[1] < 0 else -y}           # jaw orientation nearer to the arm's natural roll
-        yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
-        yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
-        yield from A.compliant_close("remote_body", 33.0)
-        yield from A.move([c[0], c[1], 0.12], axes, self.grasp_off, speed=0.06, settle=0.3)
+        if not getattr(self, "_holding", False):
+            p, R = self.device()
+            y = R[:, 1]
+            gx = self.grasp_x if gx is None else gx
+            c = p + R @ [gx, 0, 0]                            # default: behind the pocket, near the centre of mass
+            top = p[2] + self.T
+            # approach leaning back by 20 deg (wrist toward the main arm's base, away from the tool arm working
+            # at the pry notch); jaws across the width, wrist camera mount facing away from the tool arm
+            ap = R @ np.array([np.sin(R_LEAN), 0.0, -np.cos(R_LEAN)])
+            axes = {2: ap, 0: -y}
+            self._grasp_axes = axes
+            yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
+            yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
+            yield from A.compliant_close("remote_body", 33.0)
+            self._holding = True
+            if not lift:
+                return self.stage("hold_device", self.env.grip_force("R") > 10.0)
+        c = A.tool(self.grasp_off)[0]
+        yield from A.move([c[0], c[1], 0.12], self._grasp_axes, self.grasp_off, speed=0.06, settle=0.3)
         pd, _ = self.device()
         lifted = pd[2] > 0.06
         pa, Ra = A.tcp_actual()
         self._grasp_rel = Ra.T @ (pd - pa)
         self.say(f"[R] device lifted to z={pd[2]:.3f}, squeeze {self.env.grip_force('R'):.1f} N, cells free {self.cells_free()}")
+        if not lifted:
+            self._holding = False
         return self.stage("grasp_device", lifted)
 
     def grasp_offset(self):
@@ -609,19 +650,18 @@ class SkillPolicy:
         """Grasp the handle just above its lower face, lift 4 mm and slide the tool out of the fork."""
         A = self.L
         pt, Rt = self.tool_pose()
-        hx = Rt[:, 0]                                          # handle thin axis (= foot direction)
+        hy = Rt[:, 1]                                          # handle wide axis (across the foot direction)
         grasp_z = TOOL_RACK["plate_z"] + 0.013                 # fingertips 13 mm above the holder plate
-        off = np.array([0.0205 - HANDLE_W / 2 - 0.002, 0.0, 0.0])   # handle centre, 2 mm off the fixed jaw
-        best = None
-        for ax in ({2: DOWN, 0: -hx}, {2: DOWN, 0: hx}):
-            q, err, rerr = A.solve_best([pt[0], pt[1], grasp_z], ax, off)
-            if best is None or err + 0.02 * rerr < best[0]:
-                best = (err + 0.02 * rerr, ax)
-        axes = best[1]
+        # jaws close across the 22 mm handle width: the bulky upper part of the fixed jaw then points sideways
+        # (along y) and cannot hit the main arm, which holds the device just behind the pry notch
+        off = np.array([0.0205 - HANDLE_D / 2 - 0.002, 0.0, 0.0])   # handle centre, 2 mm off the fixed jaw
+        # TCP x = tool +y: while prying (tool y = device y) the wrist camera mount then faces +x, i.e. toward the
+        # tool arm's own base and away from the main arm
+        axes = {2: DOWN, 0: hy}
         c = pt[:2]
-        # low sideways approach (the jaws straddle the handle across x and slide in along y): a high
-        # approach is out of the SO-101's vertical-approach workspace and would sweep the tool over
-        e0 = yield from A.goto([c[0], c[1] + 0.06, grasp_z + 0.004], axes, off, grip=GRIP_OPEN, dur=1.5)
+        # low approach from the open (-x) side of the fork: the jaws straddle the handle across y and slide in
+        # along x (a high approach is out of the SO-101's vertical-approach workspace)
+        e0 = yield from A.goto([c[0] - 0.06, c[1], grasp_z + 0.004], axes, off, grip=GRIP_OPEN, dur=1.5)
         e1 = yield from A.move([c[0], c[1], grasp_z], axes, off, speed=0.03, settle=0.1)
         self.say(f"[L] tool grasp ik err {1000*e0:.1f} / {1000*e1:.1f} mm")
         yield from A.compliant_close("pry_tool", 24.0)
@@ -684,18 +724,21 @@ class SkillPolicy:
                     if self.env.tool_bid in (b1, b2) and not ((b1 in rb) or (b2 in rb)):
                         self.say("      tool contact:", m_.geom(c.geom1).name or m_.body(b1).name, "|",
                                  m_.geom(c.geom2).name or m_.body(b2).name, round(c.dist * 1000, 2))
-                if np.linalg.norm(err) > 0.004:
-                    self.say("[L] tip error too large to correct (blocked?)")
+                if np.linalg.norm(pa - A.tool()[0]) > 0.003:
+                    self.say("[L] arm is blocked: no tip correction")
                     break
+                err = err * min(1.0, 0.008 / max(np.linalg.norm(err), 1e-9))
                 if np.linalg.norm(err) < 0.0003:
                     break
                 bias = bias + err
                 yield from A.move(P(xb, z), axes, off, speed=0.01, min_time=0.1, settle=0.15)
 
         yield from A.goto(self.local(cx0 + 0.04, yoff, T + 0.012), axes, off, dur=1.2, settle=0.1)
+        self.phase("pry_approach")
         x_in = cx0 - 0.0060                                     # foot tip 1 mm short of the + end faces
         e0 = yield from A.move(P(x_in, T + 0.003), axes, off, speed=0.03, settle=0.1)
         yield from correct(x_in, T + 0.003)
+        self.phase("pry_above")
         e1 = yield from A.move(P(x_in, z_low), axes, off, speed=0.03, settle=0.15)
         # stand the blade upright (pushing with the top edge of a leaning blade would tip the + ends up
         # into the lip), then re-aim
@@ -706,7 +749,7 @@ class SkillPolicy:
         self.phase("pry_inserted")
         # push both cells into their springs (feedback on the + end positions)
         xb = x_in
-        while xb < cx0 + 0.0085:
+        while xb < cx0 + 0.0095:
             xb += 0.0005
             yield from A.move(P(xb, z_low), axes, off, speed=0.006, min_time=0.06, settle=0.03)
             if min(st[0] for st in self.cell_state()) > UNLATCH_SHIFT:
@@ -717,37 +760,75 @@ class SkillPolicy:
         if self.lift_cells:
             # lift the + ends above the lip top while the blade keeps the springs compressed; feedback on
             # the measured + end heights (the springs and cells load the tool, the servos sag)
-            axes = axes_push                                    # lever back while lifting
-            # lift in 1.5 mm steps; feedback on both + end heights: keep the foot centred in the notch
-            # (measured tip) and shift it toward a cell that lags behind
+            # lift in 1.5 mm steps (absolute heights) with feedback on both + end heights. Lateral: damped,
+            # clamped correction of the measured tip y (keeps the foot centred under both cells) plus a small
+            # shift toward a cell that lags behind.
             z = z_low
             ybal = 0.0
+            lat = 0.0
+            yd = R[:, 1]
             for k in range(30):
                 st = self.cell_state()
                 b0, b1 = st[0][1], st[1][1]
                 if min(b0, b1) > cz + 0.0015:
                     break
-                if k > 2 and abs(b0 - b1) > 0.002:
-                    ybal = float(np.clip(ybal + 0.0004 * np.sign(b0 - b1), -0.0015, 0.0015))  # cell1 is at +y
-                z = min(z + 0.0015, cz + 0.006)
-                yield from A.move(P(xb, z) + R[:, 1] * ybal, axes, off, speed=0.01, min_time=0.12, settle=0.1)
-                err = self.local(xb, yoff, z) + R[:, 1] * ybal - self.env.d.site("pry_tip").xpos
-                bias = bias + R[:, 1] * (R[:, 1] @ err) + R[:, 2] * np.clip(R[:, 2] @ err, -0.001, 0.003)
+                if abs(b0 - b1) > 0.002 and z > dm["floor"] + 0.004:
+                    ybal = float(np.clip(ybal + 0.0003 * np.sign(b0 - b1), -0.0012, 0.0012))  # cell1 is at +y
+                z = min(z + 0.0015, cz + 0.007)
+                # lever back gradually (0 deg near the floor -> LEAN at the lip top): keeps the wrist inside its
+                # flex range as the tool rises, without a sudden re-orientation under load
+                frac = float(np.clip((z - dm["floor"] - 0.004) / max(cz - dm["floor"] - 0.004, 1e-3), 0, 1))
+                axes = self.tool_axes(lean_frame(R, LEAN * frac))
+                tgt = self.local(xb, yoff, z) + yd * ybal
+                eik = yield from A.move(tgt + bias + yd * lat, axes, off, speed=0.01, min_time=0.12, settle=0.1)
+                ey = float(yd @ (tgt - self.env.d.site("pry_tip").xpos))
+                if self.verbose and self.on_phase is not None:
+                    pa, _ = A.tcp_actual()
+                    pa, Ra = A.tcp_actual(); _, Rt_ = self.tool_pose()
+                    slip = np.degrees(np.arccos(np.clip((np.trace((Ra.T @ Rt_).T @ self.tool_rel[1]) - 1) / 2, -1, 1)))
+                    tip_rel = Ra.T @ (self.env.d.site("pry_tip").xpos - pa)
+                    self.say(f"      lift z {1000*z:.1f}: ik {1000*eik:.2f} mm, track {1000*np.linalg.norm(pa - A.tool()[0]):.2f} mm, "
+                             f"tool slip {slip:.1f} deg / {1000*np.linalg.norm(tip_rel - off):.1f} mm, squeeze "
+                             f"{self.env.grip_force('L', 'pry_tool'):.0f} N, springs "
+                             f"{[round(1000*self.env.d.qpos[self.env.m.joint(f'remote_spring{i}').qposadr[0]],1) for i in range(2)]} mm, "
+                             f"device {np.round(1000*self.device()[0],1)} up {np.round(self.device()[1][:, 2], 3)} tip {np.round(1000*self.env.d.site('pry_tip').xpos,1)}")
+                    m_, d_ = self.env.m, self.env.d
+                    f6 = np.zeros(6)
+                    dev_ids = {m_.body(n).id for n in ("remote_body", "remote_plunger0", "remote_plunger1")}
+                    fz = {}
+                    for i in range(d_.ncon):
+                        c = d_.contact[i]
+                        b1, b2 = m_.geom_bodyid[c.geom1], m_.geom_bodyid[c.geom2]
+                        if (b1 in dev_ids) == (b2 in dev_ids):
+                            continue
+                        mujoco.mj_contactForce(m_, d_, i, f6)
+                        fw = c.frame.reshape(3, 3).T @ f6[:3]          # force on geom2's body, world frame
+                        sign = 1.0 if b2 in dev_ids else -1.0
+                        other = m_.body(b1 if b2 in dev_ids else b2).name
+                        fz[other] = fz.get(other, 0.0) + sign * fw[2]
+                        if other.startswith("remote_cell") and sign * fw[2] > 0.03:
+                            gh = m_.geom(c.geom2 if b2 in dev_ids else c.geom1).name or "?"
+                            pl_ = self.device()[1].T @ (c.pos - self.device()[0])
+                            self.say(f"            {other} pushes {gh} up {sign*fw[2]:.2f} N at dev {np.round(1000*pl_,1)} mm")
+                    self.say("         Fz on housing by: " + ", ".join(f"{k} {v:+.2f}" for k, v in fz.items() if abs(v) > 0.05))
                 self.phase("pry_lift_step")
+            bias = bias + yd * lat
             lifted = self.cell_state()
             self.phase("pry_lifted")
             # let the springs push the raised cells back over the lip top, set them down on it
-            yield from A.move(P(cx0 + 0.001, z) + R[:, 1] * ybal, axes, off, speed=0.006, settle=0.1)
+            yield from A.move(P(cx0 + 0.001, z) + yd * ybal, axes, off, speed=0.006, settle=0.1)
             yield from A.move(P(cx0 + 0.001, cz - 0.0035), axes, off, speed=0.006, settle=0.1)
             self.phase("pry_set_down")
             yield from A.move(P(cx0 - 0.011, cz - 0.0035), axes, off, speed=0.008, settle=0.1)
+            axes = axes_push
         else:                    # ablation: push only, then withdraw
             yield from A.move(P(x_in, z_low), axes, off, speed=0.006, settle=0.1)
             axes = axes_push
             yield from A.move(P(x_in, z_low), axes, off, speed=0.02, min_time=0.6, settle=0.1)
             yield from A.move(P(cx0 - 0.011, z_low), axes, off, speed=0.006, settle=0.1)
         yield from A.move(P(cx0 - 0.011, T + 0.004), axes, off, speed=0.02, settle=0.1)
-        yield from A.move(self.local(cx0 + 0.04, 0, T + 0.012), axes, off, speed=0.04, settle=0.3)
+        # leave sideways (-y, toward the tool holder): the raised + ends now stick up above the device top
+        yield from A.move(self.local(cx0 - 0.011, -(self.W / 2 + 0.02), T + 0.006), axes, off, speed=0.03, settle=0.3)
         self.phase("pry_done")
         st = self.cell_state()
         free = self.cells_free()
@@ -763,7 +844,7 @@ class SkillPolicy:
         axes = self.tool_axes(Rt_des)
         off = self.tool_rel[0]
         cx, cy = TOOL_RACK["center"]
-        tip_x = cx - 0.0006                                    # tip site sits 0.6 mm toward the foot side
+        tip_x = cx - 0.0004                                    # tip site sits 0.4 mm toward the foot side
         rest = TOOL_RACK["plate_z"] + 0.0005 - TOOL_LEN["tip_to_collar"]
         yield from A.goto([tip_x - 0.045, cy, 0.03], self.tool_axes(lean_frame(Rt_des, -LEAN)), off, dur=1.6,
                           settle=0.1)                          # clear of the jig fence (leaning: reachable)
@@ -799,7 +880,17 @@ class SkillPolicy:
             yield from self.L.wait(0.5)
         return ok
 
+    def release_device(self):
+        """Open the hold grasp and back off upward (before re-grasping at the centre of mass)."""
+        A = self.R
+        yield from A.grip(GRIP_OPEN, 0.5)
+        yield from A.move(A.tool(self.grasp_off)[0] + [0, 0, 0.04], self._grasp_axes, self.grasp_off, speed=0.06,
+                          settle=0.1)
+        self._holding = False
+
     def _after_pry(self):
+        if getattr(self, "_holding", False):
+            yield from self.release_device()
         ok = yield from self.grasp_device()
         if not ok:
             yield from self.R.grip(GRIP_OPEN, 0.4)
@@ -820,15 +911,13 @@ class SkillPolicy:
             ok, tool_ok = self.run_par(self._main_prep()), False
         if ok and tool_ok:
             self.run_par(self.tool_standby())
-            if self.hold:
-                self.run_par(self.hold_device())
+            if self.hold:                                       # hold the device firmly on the jig by its rear end
+                self.run_par(self.grasp_device(lift=False))
             pried = False
             for k in range(3):
                 pried = self.run_par(self.pry_cells(attempt=k))
                 if pried:
                     break
-            if self.hold:
-                self.run_par(self.release_hold())
             self.run_par(self._after_pry(), self.return_tool())
         elif ok:                      # ablation without the tool: go straight to grasp + flip
             self.run_par(self._after_pry())

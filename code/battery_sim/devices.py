@@ -9,7 +9,8 @@ The battery compartment follows the construction of a real remote control:
                       A weld equality ``<prefix>latch`` models the snap latch; the env
                       releases it only when the cover is pressed down AND pushed along +x
                       (press-and-slide), like the flexible latch tab of a real cover.
-  * - terminal      : sprung coil-spring plunger (slide joint with stiffness), 0.6 N preload.
+  * - terminal      : sprung coil-spring plunger (slide joint with stiffness), 0.6 N preload, with a contact
+                      plate as tall as the pocket.
   * + terminal      : flat contact plate on the end stop.
   * retaining lips  : rigid tabs over the top of each + end. A seated cell lies flat on the
                       pocket floor with its + end trapped under the lip (0.5 mm play): it can
@@ -17,9 +18,9 @@ The battery compartment follows the construction of a real remote control:
                       Pushing it toward the spring alone does not free it either: the spring
                       pushes it straight back under the lip. The + end has to be pushed past
                       the lip AND lifted above the lip top, which is what a pry tool does.
-  * pry notch       : narrow notch behind the + ends, between the two cells, whose floor is
-                      recessed 3 mm and continues 14 mm under the + ends, so a thin pry tool
-                      with a hooked tip can reach under the cell ends.
+  * pry notch       : notch behind the + ends (19 mm wide), whose floor is recessed 3 mm and continues
+                      16 mm under the + ends, so a thin pry tool with a wide hooked tip can reach under
+                      both cell ends; above the cells the lips leave only a 9.6 mm gap (< any cell).
   * cells           : free bodies with IEC dimensions (AA 14.5 x 50.5 mm, 23 g; AAA 10.5 x 44.5 mm, 11.5 g).
 """
 
@@ -53,23 +54,24 @@ class CellType:
 
 
 AA = CellType("AA", 0.00725, 0.0505, 0.023, 0.016, 0.0025)       # 1.5 mm rib between the cells
-AAA = CellType("AAA", 0.00525, 0.0445, 0.0115, 0.0135, 0.0012)
+AAA = CellType("AAA", 0.00525, 0.0445, 0.0115, 0.017, 0.0012)
 AA_R, AA_L, AA_MASS = AA.r, AA.length, AA.mass
 SPRING_K = 400.0                   # N/m coil spring (1.5 mm preload -> 0.6 N; ~3 N when pushed past the lip)
-SPRING_STROKE = 0.0085             # plunger travel beyond the seated position
+SPRING_STROKE = 0.0100             # plunger travel beyond the seated position
 LIP_LEN = 0.0045                   # retaining lip overhang over the + ends (m)
 LIP_GAP = 0.0005                   # play between a seated cell's crest and the lip underside
-SLOT_HALF_W = 0.0070               # pry notch half-width (between the two cells; tool blade is +-6.3 mm)
+SLOT_HALF_W = 0.0095               # pry notch half-width: just outside both cells' lowest lines (|y| = 8-8.5 mm),
+                                   # so the tool foot (+-8.4 mm) lifts the cells from below, not by wedging between them
+LIP_IN = 0.0048                    # retaining lips start at |y| = 4.8 mm: the 9.6 mm gap between them is narrower
+                                   # than any cell (AAA 10.5 mm), the pry tool's 8 mm neck passes through it
 SLOT_LEN = 0.016                   # pry notch length behind the + end stop
 PRY_DEPTH = 0.003                  # notch floor sits 3 mm below the pocket floor ...
-PRY_EXT = 0.014                    # ... and the recess continues 14 mm under the + ends
+PRY_EXT = 0.016                    # ... and the recess continues 16 mm under the + ends
 REAR_LIP = 0.004                   # end-stop thickness between the cover recess and the pocket
-HOOD_GAP = 0.0013                  # play between a seated cell's crest and the hood over the - end
-HOOD_LEN = 0.0015                  # hood overhang over the seated - end
 # light parts (cells 11-23 g): stiff contacts, otherwise MuJoCo's mass-scaled soft contacts let a tool
 # sink millimetres into a cell before it moves
 STIFF = 'solref="0.005 1"'
-METAL = f'friction="0.12 0.005 0.0001" priority="2" {STIFF}'   # nickel-plated spring plate
+METAL = f'friction="0.12 0.005 0.0001" priority="2" {STIFF}'   # nickel-plated coil-spring contact
 LIP_METAL = f'friction="0.10 0.005 0.0001" priority="2" {STIFF}'   # + terminal tab (retaining lip)
 
 
@@ -149,6 +151,7 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
     g = []
     # collision shell: boxes (hidden, group 3). Visual: rounded CSG mesh below.
     col = f'group="3" rgba="0.5 0.5 0.5 1" friction="0.35 0.005 0.0001" {STIFF}'
+    wall = f'group="3" rgba="0.5 0.5 0.5 1" friction="0.2 0.005 0.0001" {STIFF}'   # smooth moulded pocket walls
     # bottom slab with the recessed notch floor
     g.append(_box(f"{p}slab", (-L / 2, -W / 2, 0), (nx0, W / 2, floor), m, col))
     g.append(_box(f"{p}slabF", (px1, -W / 2, 0), (L / 2, W / 2, floor), m, col))
@@ -164,20 +167,13 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
         g.append(_box(f"{p}rear{tag}", (nx0, y0, floor), (rx, y1, T), m, col))          # notch side walls
         y0, y1 = sorted((s * slot_w, s * hw_in))
         g.append(_box(f"{p}rearwall{tag}", (rx, y0, floor), (cx0, y1, cov_z0), m, col))  # + end stop beside the notch
+        y0, y1 = sorted((s * LIP_IN, s * hw_in))
         g.append(_box(f"{p}lip{tag}", (cx0, y0, lip_z0), (cx0 + LIP_LEN, y1, cov_z0), m,
                       'group="3" rgba="0.5 0.5 0.5 1" ' + LIP_METAL))
         g.append(f'<geom type="box" pos="{_f(cx0 + LIP_LEN / 2, (y0 + y1) / 2, (lip_z0 + cov_z0) / 2)}" '
                  f'size="{_f(LIP_LEN / 2, (y1 - y0) / 2, (cov_z0 - lip_z0) / 2)}" material="{m}_plain" '
                  f'contype="0" conaffinity="0" group="1"/>')
     g.append(_box(f"{p}endwall", (cx1, -hw_in, floor), (L / 2, hw_in, cov_z0), m, col))
-    # hood over the spring (-) end: the - end slides under it on insertion and is the pivot when the
-    # + end is pried up; it stops an upside-down cell from swinging its - end off the spring plate
-    hood_x0 = cx0 + 0.0001 + ct.col_len - HOOD_LEN
-    hood_z0 = floor + 2 * ct.r + 0.0001 + HOOD_GAP
-    g.append(_box(f"{p}hood", (hood_x0, -hw_in, hood_z0), (cx1, hw_in, cov_z0), m, col))
-    g.append(f'<geom type="box" pos="{_f((hood_x0 + cx1) / 2, 0, (hood_z0 + cov_z0) / 2)}" '
-             f'size="{_f((cx1 - hood_x0) / 2, hw_in, (cov_z0 - hood_z0) / 2)}" material="{m}_plain" contype="0" '
-             f'conaffinity="0" group="1"/>')
     # low centre divider between the cells (behind the pry recess)
     for i in range(spec.n_cells - 1):
         yd = (i + 0.5 - (spec.n_cells - 1) / 2) * cell_pitch
@@ -188,7 +184,7 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
                  f'size="{_f((cx1 - x0d) / 2, dw, dh / 2)}" material="{m}_plain" contype="0" conaffinity="0" group="1"/>')
     for s in (-1, 1):
         y0, y1 = sorted((s * hw_in, s * (hw_in + ledge_w)))
-        g.append(_box(f"{p}ledge{'L' if s > 0 else 'R'}", (rx, y0, floor), (L / 2, y1, cov_z0), m, col))
+        g.append(_box(f"{p}ledge{'L' if s > 0 else 'R'}", (rx, y0, floor), (L / 2, y1, cov_z0), m, wall))
         y0, y1 = sorted((s * (W / 2 - rim), s * W / 2))
         g.append(_box(f"{p}rim{'L' if s > 0 else 'R'}", (rx, y0, floor), (L / 2, y1, T), m, col))
     shell_mesh = f"{p}shell_{spec.name}"
@@ -227,14 +223,18 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
 
     # spring plungers (one per cell) as child bodies with sprung slide joints (+x = compression)
     plungers = []
+    pz_lo, pz_hi = floor + 0.0008 - cz, cov_z0 - 0.0003 - cz          # plate extent relative to the cell axis
+    pz_c, pz_h = (pz_lo + pz_hi) / 2, (pz_hi - pz_lo) / 2
     for i in range(spec.n_cells):
         yc = (i - (spec.n_cells - 1) / 2) * cell_pitch
         plungers.append(
             f'<body name="{p}plunger{i}" pos="{_f(plunger_x, yc, cz)}">'
             f'<joint name="{p}spring{i}" type="slide" axis="1 0 0" range="-0.0015 {SPRING_STROKE}" stiffness="{SPRING_K}" '
             f'springref="-0.0015" damping="0.4"/>'
-            f'<geom type="box" size="0.0006 {min(0.0055, ct.r):.4f} {min(0.0055, ct.r):.4f}" material="metal_contact" '
-            f'mass="0.002" {METAL}/></body>')
+            # tall contact plate (floor+0.8 mm .. pocket top-0.3 mm): an upside-down cell whose - end lifts by a
+            # few mm still bears on the spring, so it stays pressed against the + stop under the lip
+            f'<geom type="box" pos="0 0 {pz_c:.5f}" size="0.0006 {min(0.005, ct.r - 0.0003):.4f} {pz_h:.5f}" '
+            f'material="metal_contact" mass="0.002" {METAL}/></body>')
 
     c, s_ = np.cos(yaw), np.sin(yaw)
     quat = (np.cos(yaw / 2), 0, 0, np.sin(yaw / 2))
@@ -290,7 +290,7 @@ def aa_cell_xml(name, pos, yaw, material, tilt=0.0, ct=AA) -> str:
     q = _qmul(q_z, q_y)
     return (f'<body name="{name}" pos="{_f(*pos)}" quat="{_f(*q)}"><freejoint name="{name}_free"/>'
             f'<geom name="{name}_geom" type="cylinder" size="{ct.r:.5f} {ct.col_len/2:.5f}" material="{material}" '
-            f'mass="{ct.mass}" condim="4" friction="0.7 0.01 0.001" {STIFF}/>'
+            f'mass="{ct.mass}" condim="4" friction="0.25 0.01 0.001" {STIFF}/>'
             f'<geom type="cylinder" pos="0 0 {-ct.col_len/2 - 0.0003:.5f}" size="{0.36 * ct.r:.5f} 0.0003" material="metal_contact" '
             f'contype="0" conaffinity="0" group="1"/>'
             f'<geom type="cylinder" pos="0 0 {ct.col_len/2 - 0.0001:.5f}" size="{ct.r - 0.0008:.5f} 0.0002" material="metal_contact" '
