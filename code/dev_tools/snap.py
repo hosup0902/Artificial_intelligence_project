@@ -11,7 +11,7 @@ def save(dev, seed, stage="prepry"):
     env = BatteryRemovalEnv(device=dev); env.reset(seed)
     pol = SkillPolicy(env, verbose=False)
     ok, tok = pol.run_par(pol._main_prep(), pol._tool_prep())
-    pol.run_par(pol.tool_standby()); pol.run_par(pol.grasp_device(lift=False, lean=R_LEAN))
+    pol.run_par(pol.tool_standby()); pol.run_par(pol.grasp_device(lift=False, gx=pol.dm["hold_x"], lean=R_LEAN))
     if stage == "preflip":
         for k in range(3):
             if pol.run_par(pol.pry_cells(attempt=k)):
@@ -20,7 +20,8 @@ def save(dev, seed, stage="prepry"):
             yield from pol.release_device()
             ok = yield from pol.grasp_device()
             return ok
-        pol.run_par(r_side(), pol.return_tool())
+        pol.run_par(pol.tool_retreat())
+        pol.run_par(r_side())
     st = np.zeros(mujoco.mj_stateSize(env.m, SPEC)); mujoco.mj_getState(env.m, env.d, st, SPEC)
     blob = dict(state=st, R=(pol.R.qcmd, pol.R.grip_cmd), L=(pol.L.qcmd, pol.L.grip_cmd), tool_rel=pol.tool_rel,
                 log=env.log, cover_seat=pol.cover_seat, extra=dict(_holding=pol._holding, _grasp_axes=pol._grasp_axes))

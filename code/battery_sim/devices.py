@@ -193,8 +193,9 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
     shell_dims = dict(L=L, W=W, T=T, floor=floor, cov_z0=cov_z0, hw_in=hw_in, rim=rim, cx0=cx0, cx1=cx1, rx=rx,
                       nx0=nx0, px1=px1, slot_w=slot_w, slot_floor=slot_floor, lip_z0=lip_z0, lip_len=LIP_LEN,
                       cell_r=ct.r, cell_len=ct.col_len, cell_pitch=cell_pitch,
-                      # arm R grasps the solid rear section behind the pry notch, near the centre of mass
-                      grasp_x=max(nx0 - 0.028, -L / 2 + 0.014))
+                      # arm R grasps the solid section 28 mm behind the pry notch (closer, its fingers disturb the
+                      # raised cells; the open pocket must stay clear so the cells can fall out)
+                      grasp_x=max(nx0 - 0.028, -L / 2 + 0.014), hold_x=max(nx0 - 0.028, -L / 2 + 0.014))
     # rating sticker on the exposed underside region (now facing up)
     sx1 = min(-L / 2 + 0.075, nx0 - 0.004)          # keep the sticker clear of the notch
     g.append(_box(f"{p}sticker", (-L / 2 + 0.012, -W / 2 + 0.008, T), (sx1, W / 2 - 0.008, T + 0.0003),

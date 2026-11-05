@@ -45,7 +45,7 @@ GRASP_DEPTH = 0.016                         # fingertips this far below the devi
 HANDLE_D = 0.022                            # pry-tool handle width across the jaws
 UNLATCH_SHIFT = 0.0062                      # push the cells this far into their springs (lip overhang 4.5 mm; the
                                             # tool's back face must clear the lip end before the lift)
-DROP_LEAD = 0.04                            # sideways travel of a cell sliding out of the rolling device (m)
+DROP_LEAD = 0.02                            # sideways travel of a cell sliding out of the rolling device (m)
 R_LEAN = np.radians(20.0)                   # main arm grasp approach lean (keeps its wrist clear of the tool arm)
 LEAN = TOOL_FOOT_ANGLE                      # the tool is held leaning back (handle toward arm L) by 10 deg: with a
                                             # vertical tool the SO-101 wrist-flex limit (95 deg) is hit near the jig
@@ -214,7 +214,9 @@ class SkillPolicy:
         self.grasp_x = dm["grasp_x"]
         self.grasp_off = np.array([0.02 - self.W / 2, 0.0, 0.0])   # fixed jaw tip at tool x = +0.02
         # jaw bottom is 6.6 mm below the tool origin: keep it >= 0.5 mm above the tray for thinner devices
-        self.grasp_depth = GRASP_DEPTH if self.T >= 0.022 else self.T - 0.0071
+        # fingertips 3.5 mm above the jig: the jaw pads touch the housing over its full height (resists the
+        # device pitching in the grasp; the cells make the device nose-heavy)
+        self.grasp_depth = self.T - 0.0035
         p, R = env.body_pose("remote_body")
         pc, _ = env.body_pose("remote_cover")
         self.cover_seat = float(R[:, 0] @ (pc - p))
@@ -275,8 +277,10 @@ class SkillPolicy:
         return out
 
     def cells_free(self):
-        """A cell is free when its + end has been lifted onto the top of the retaining lip."""
-        return [st[1] > self.dm["cov_z0"] - 0.0005 for st in self.cell_state()]
+        """A cell is free when its + end has been lifted onto the top of the retaining lip (and it is still
+        in the pocket region)."""
+        return [st[1] > self.dm["cov_z0"] - 0.0005 and -0.02 < st[0] < 0.03 and st[1] < self.T + 0.02
+                for st in self.cell_state()]
 
     # ------------------------------------------------------------- R skills
     def push_to_fence(self, name="push_to_fence"):
@@ -385,13 +389,14 @@ class SkillPolicy:
             self._grasp_axes = axes
             yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
             yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
-            yield from A.compliant_close("remote_body", 28.0)
+            yield from A.compliant_close("remote_body", 28.0 if not lift else 33.0)
+            self.phase("grasp_closed")
             self._holding = True
             if not lift:
                 return self.stage("hold_device", self.env.grip_force("R") > 10.0)
         c = A.tool(self.grasp_off)[0]
         yield from A.move([c[0], c[1], 0.12], self._grasp_axes, self.grasp_off, speed=0.06, settle=0.3)
-        yield from A.regulate_grip("remote_body", lo=12.0, hi=22.0)
+        yield from A.regulate_grip("remote_body", lo=20.0, hi=30.0)
         pd, _ = self.device()
         lifted = pd[2] > 0.06
         pa, Ra = A.tcp_actual()
@@ -498,11 +503,32 @@ class SkillPolicy:
                 return path[::-1]
         return None
 
+    @staticmethod
+    def cells_safe(Rd):
+        """Freed cells rest loosely in the pocket with their + ends on the lip tops: they stay in while the
+        device rolls <= 30 deg, tips rear-down <= 20 deg or front-down (toward the spring end) <= 55 deg."""
+        g = Rd.T @ np.array([0.0, 0.0, -1.0])               # gravity in the device frame
+        if g[2] > -0.3:
+            return False
+        roll = np.degrees(np.arctan2(abs(g[1]), -g[2]))
+        pitch = np.degrees(np.arctan2(g[0], -g[2]))          # > 0: front (spring end) down
+        return roll <= 30.0 and -20.0 <= pitch <= 55.0
+
     def _upright_path(self, q0, q1, rel, n=25):
+        """Joint-space segment check: the freed cells only rest loosely on the lip tops, so the device must stay
+        within 30 deg of upright unless its pocket is already above the battery bin."""
+        bc = np.array(BATTERY_BIN["center"][:2])
+        half = BATTERY_BIN["size"][0] / 2 - 0.025
         for t in np.linspace(0, 1, n):
             q = q0 + (q1 - q0) * t
-            _, Rd_, cw_, _ = self._dev_geom(q, rel)
-            if Rd_[2, 2] < self.upright_min - 0.05 or not self._clear_of_obstacles(cw_) or self.arm_collides(q):
+            _, Rd_, cw_, comp = self._dev_geom(q, rel)
+            over_bin = np.all(np.abs(comp[:2] - bc) < half)
+            if over_bin:
+                if Rd_[2, 2] < self.upright_min - 0.05:
+                    return False
+            elif not self.cells_safe(Rd_):
+                return False
+            if not self._clear_of_obstacles(cw_) or self.arm_collides(q):
                 return False
         return True
 
@@ -518,6 +544,19 @@ class SkillPolicy:
             routes += [[raised1, q_up], [raised0, sw, raised1, q_up], [raised0, raised1, q_up]]
         swing_first = q0.copy(); swing_first[0] = q_up[0]
         routes.append([swing_first, q_up])
+        # carry poses: device kept upright (same approach as when lifted) with the pocket right above the bin
+        prel, Rrel, comp_off, corners = rel
+        bc = np.array(BATTERY_BIN["center"][:2])
+        top = BATTERY_BIN["center"][2] + BATTERY_BIN["size"][2]
+        _, R0 = ik.fk(q0)
+        for h in (0.06, 0.09, 0.12):
+            for seed in (q0, q_up):
+                qc, err, rerr = ik.solve(seed, [bc[0], bc[1], top + h], {2: R0[:, 2]}, comp_off, iters=300)
+                if err > 0.004 or rerr > 0.05:
+                    continue
+                qr = qc.copy(); qr[1] -= np.radians(20); qr[3] += np.radians(20)
+                r0 = q0.copy(); r0[1] -= np.radians(20); r0[3] += np.radians(20)
+                routes += [[qc, q_up], [r0, qc, q_up], [r0, qr, qc, q_up]]
         for r in routes:
             pts = [q0] + r
             if all(np.all(ik.lo <= w) and np.all(w <= ik.hi) for w in r) and \
@@ -540,7 +579,7 @@ class SkillPolicy:
             q = rng.uniform(lo, hi)
             q[4] = rng.uniform(-0.15, 0.15)
             pd, Rd, cw, comp = self._dev_geom(q, rel)
-            if Rd[2, 2] > -0.5 or cw[:, 2].min() < top + 0.035 or comp[2] > top + 0.30:
+            if Rd[2, 2] > -0.64 or cw[:, 2].min() < top + 0.035 or comp[2] > top + 0.30:   # >= 130 deg
                 continue
             # the freed cells slide out through the pocket opening at ~90 deg of roll and keep some sideways
             # speed: aim the expected landing point (pocket + 4 cm along the opening's horizontal direction)
@@ -621,9 +660,10 @@ class SkillPolicy:
         A = self.R
         cc = np.array(BODY_CRATE["center"][:2])
         ctop = BODY_CRATE["center"][2] + BODY_CRATE["size"][2]
+        yield from A.regulate_grip("remote_body", lo=20.0, hi=30.0)   # firm grip for the swing (cells are out)
         q_r = A.qcmd.copy()
         q_r[1] = max(A.ik.lo[1], q_r[1] - np.radians(30))     # raise first so the swing clears both bins
-        yield from A.goto_q(q_r, dur=0.8)
+        yield from A.goto_q(q_r, dur=1.2)
         best = None
         for h in (0.05, 0.07, 0.09):
             for axes in ({2: DOWN, 1: (0, 1, 0)}, {2: DOWN, 1: (0, -1, 0)}, {2: DOWN}, {}):
@@ -637,8 +677,8 @@ class SkillPolicy:
         self.say(f"[R] crate pose ik err {1000*err:.1f} mm")
         q_swing = A.qcmd.copy()
         q_swing[0] = q_c[0]
-        yield from A.goto_q(q_swing, dur=1.4)
-        yield from A.goto_q(q_c, dur=1.2, settle=0.3)
+        yield from A.goto_q(q_swing, dur=2.2)
+        yield from A.goto_q(q_c, dur=1.6, settle=0.3)
         yield from A.grip(GRIP_OPEN, 0.8)
         yield from A.wait(0.6)
         q_up = A.qcmd.copy()
@@ -768,11 +808,13 @@ class SkillPolicy:
         self.phase("pry_inserted")
         # push both cells into their springs (feedback on the + end positions)
         xb = x_in
-        while xb < cx0 + 0.0095:
+        for _ in range(60):
+            # stop on the measured cell shift; limit on the MEASURED tip (it lags the command under spring load)
+            tip_x = float(R[:, 0] @ (self.env.d.site("pry_tip").xpos - p)) - cx0
+            if min(st[0] for st in self.cell_state()) > UNLATCH_SHIFT or tip_x > 0.0095:
+                break
             xb += 0.0005
             yield from A.move(P(xb, z_low), axes, off, speed=0.006, min_time=0.06, settle=0.03)
-            if min(st[0] for st in self.cell_state()) > UNLATCH_SHIFT:
-                break
         pushed = [st[0] for st in self.cell_state()]
         self.phase("pry_pushed")
         lifted = pushed
@@ -856,6 +898,16 @@ class SkillPolicy:
                  f"final (+end x, z mm, tilt) {[(round(1000*s[0],1), round(1000*s[1],1), round(s[2],1)) for s in st]}, free {free}")
         return self.stage("pry_cells", all(free))
 
+    def tool_retreat(self):
+        """Move the tool away from the device to the holder's entry side (clears the main arm's re-grasp)."""
+        A = self.L
+        self.calibrate_tool()
+        Rt_des = np.array([[-1, 0, 0], [0, -1, 0], [0, 0, 1.0]])
+        cx, cy = TOOL_RACK["center"]
+        yield from A.goto([cx - 0.0004 - 0.045, cy, 0.03], self.tool_axes(lean_frame(Rt_des, -LEAN)), self.tool_rel[0],
+                          dur=1.6, settle=0.1)               # clear of the jig fence (leaning: reachable)
+        self._tool_retreated = True
+
     def return_tool(self):
         """Slide the tool back into the fork holder (handle 4 mm above the plate), lower it, let go."""
         A = self.L
@@ -866,8 +918,8 @@ class SkillPolicy:
         cx, cy = TOOL_RACK["center"]
         tip_x = cx - 0.0004                                    # tip site sits 0.4 mm toward the foot side
         rest = TOOL_RACK["plate_z"] + 0.0005 - TOOL_LEN["tip_to_collar"]
-        yield from A.goto([tip_x - 0.045, cy, 0.03], self.tool_axes(lean_frame(Rt_des, -LEAN)), off, dur=1.6,
-                          settle=0.1)                          # clear of the jig fence (leaning: reachable)
+        if not getattr(self, "_tool_retreated", False):
+            yield from self.tool_retreat()
         entry = np.array([tip_x - 0.045, cy, rest + 0.004])
         yield from A.move(entry, axes, off, speed=0.03, settle=0.1)
         bias = np.zeros(3)
@@ -916,7 +968,7 @@ class SkillPolicy:
                           settle=0.1)
         self._holding = False
 
-    def _after_pry(self):
+    def _regrasp_lift(self):
         if getattr(self, "_holding", False):
             yield from self.release_device()
         ok = yield from self.grasp_device()
@@ -924,6 +976,10 @@ class SkillPolicy:
             yield from self.R.grip(GRIP_OPEN, 0.4)
             yield from self.R.move(self.R.tool()[0] + [0, 0, 0.05], {2: DOWN})
             ok = yield from self.grasp_device()
+        return ok
+
+    def _after_pry(self, lifted=None):
+        ok = (yield from self._regrasp_lift()) if lifted is None else lifted
         if ok:
             ok = yield from self.flip_over_bin()
         if ok or self.env.success().cells_in_battery_bin.count(True) > 0:
@@ -940,13 +996,15 @@ class SkillPolicy:
         if ok and tool_ok:
             self.run_par(self.tool_standby())
             if self.hold:                                       # hold the device firmly on the jig by its rear end
-                self.run_par(self.grasp_device(lift=False, lean=R_LEAN))
+                self.run_par(self.grasp_device(lift=False, gx=self.dm["hold_x"], lean=R_LEAN))
             pried = False
             for k in range(3):
                 pried = self.run_par(self.pry_cells(attempt=k))
                 if pried:
                     break
-            self.run_par(self._after_pry(), self.return_tool())
+            self.run_par(self.tool_retreat())                     # tool arm leaves before the main arm re-grasps
+            lifted = self.run_par(self._regrasp_lift())
+            self.run_par(self._after_pry(lifted), self.return_tool())
         elif ok:                      # ablation without the tool: go straight to grasp + flip
             self.run_par(self._after_pry())
         else:

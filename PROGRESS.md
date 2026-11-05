@@ -60,9 +60,17 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 
 ## 4. 현재 상태 / 남은 문제 (최신이 위)
 
-- ✅ **TV 리모컨 seed 0 전체 성공** (양팔 + 공구 + 실제형 칸). 피크 접촉력 26 N.
-- [진행중] return_tool 실패(공구를 거치대에 정확히 못 꽂음) — 성공 판정과 무관하지만 고칠 것.
-- [미착수] 나머지 3기기(stb/ac/light), seed 다수 평가, ablation(공구 없음/들어올리기 없음) 재실행, README·run 스크립트·render_*.py 갱신(구 API 사용 가능성), 디버그 출력 정리.
+- 평가 이력 (4기기 × seed 0-2, `run_episode.py --seeds 0-2 --device <dev>`, 로그 `code/dev_tools/_out/evalN/`):
+  - eval2: AC 3/3, light 1/3, TV 0/3(착지 실패), STB 0/3.
+  - eval3(수거함 15×15 cm로 확대): 셀은 대부분 수거함에 들어감, 그러나 본체가 크레이트로 못 감(그립 약화) → 수정.
+  - eval4/eval5: **pry는 거의 항상 성공**(셀 6.2~6.5 mm 밀고 두 셀 모두 립 위로). 실패는 주로 `flip_over_bin`("no reachable flip pose").
+- [진행중] **들어올린 뒤 기기가 손 안에서 기울어짐**(셀이 앞쪽에 있어 앞이 무거움, 이동 조(moving jaw)가 윗모서리를 잡음) → 뒤집기 계획이 어려워짐.
+  - 시도: 그립 범위 조정, 깊게 잡기(효과 없음), 손가락 고무패드(비틀림 마찰 0.02, `env.py FINGER_SPIN`) → 기울기 35°→14°.
+  - 운반 중 셀 쏟아짐 방지: `cells_safe()`(roll ≤30°, 뒤로 ≤20°, 앞으로 ≤55°), 수거함 위에서는 완화. upright carry 경로 추가.
+  - 다음: eval5에서 다시 전부 flip 실패 → `dev_tools/dbg_transit.py`로 원인 분석 필요(후보 수, roll/transit 실패 이유).
+- [미해결] pry 간헐 실패(3/12): 셀이 notch 쪽으로 튀거나(-40 mm) 재시도 중 꼬임.
+- [미해결] return_tool(거치대에 꽂기) 자주 실패(성공 판정과 무관).
+- [미착수] seed 다수(목표 기기당 10+) 평가, ablation(공구 없음/들어올리기 없음), README·render 스크립트 갱신, 디버그 출력 정리.
 
 ## 5. 작업 로그
 
@@ -71,3 +79,4 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - 공구 파지 문제들 해결(높은 접근 불가 → 저고도 측면 접근, 포크형 거치대, 파지 기울기 최소화, 짧은 공구).
 - pry 디버깅 이력(원인→해결): IK 불가(wrist_flex 95°) → 기울임 / 팁 오차 → 실측 피드백 / R 카메라 충돌 → 방향 반전 / 기울인 블레이드가 셀 윗모서리 밀어 걸림 → 밀 땐 수직 / 후드가 회전 막음 → 후드 제거+키 큰 접점판 / 발이 두 셀 사이 V홈을 쐐기처럼 밀어 14 N 측력 → 넓은 notch+T자 팁 / 넓은 notch에서 셀이 빠짐 → 좁은 립 / 발이 립 끝에 걸려 기기 들림 → 얇은 블레이드+더 밀기 / 커버가 손가락에 끼어 기기 위로 떨어짐 → drop_cover / 기기 앞쪽이 들림(− 끝 마찰) → R이 중앙을 잡음 / 양팔 손목 충돌 → L은 손잡이 폭 방향 파지, R은 20° 기울여 잡기 / 빠지면서 셀 침 → 옆으로 빠짐.
 - **TV seed 0 전체 성공** (2026-11-05).
+- 4기기 평가 시작. flip 플래너 개선(후보 확대, 착지점 조준, 낮은 높이 선호), 그립 조절(regulate_grip), 수거함 확대(15×15), L이 먼저 물러난 뒤 R 재파지(순차), 운반 중 셀 안전 조건, 손가락 패드.

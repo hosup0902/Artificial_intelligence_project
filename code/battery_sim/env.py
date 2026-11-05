@@ -38,6 +38,7 @@ GRIP_OPEN, GRIP_CLOSED = 0.8, -0.17
 LATCH_FORCE = 1.5          # N, latch release threshold along the slide direction ...
 LATCH_PRESS = 1.0          # N, ... while the latch tab is pressed down at least this hard
 LATCH_STEPS = 10
+FINGER_SPIN = 0.02        # m, torsional friction of the padded finger contacts
 DEVICE_BODIES = ("remote_body", "remote_cover", "remote_cell0", "remote_cell1")
 ARM_PREFIX = {"R": "", "L": "l_"}
 
@@ -78,6 +79,14 @@ class BatteryRemovalEnv:
         self.free = {b: self.m.joint(f"{b}_free" if b != "remote_body" else "remote_free").qposadr[0]
                      for b in DEVICE_BODIES}
         self.tool_bid = self.m.body("pry_tool").id
+        # rubber finger pads (commonly fitted to the printed SO-101 jaws): a contact patch instead of a point,
+        # modelled as torsional (spin) friction on the finger contacts
+        for k, a in self.arms.items():
+            for bn in (a.prefix + "gripper", a.prefix + "moving_jaw_so101_v1"):
+                bid = self.m.body(bn).id
+                for gid in range(self.m.ngeom):
+                    if self.m.geom_bodyid[gid] == bid and self.m.geom_contype[gid]:
+                        self.m.geom_friction[gid, 1] = FINGER_SPIN
         self.arm_bodies = {k: self._subtree(self.m.body(a.base).id) for k, a in self.arms.items()}
         self.robot_bodies = self.arm_bodies["R"] | self.arm_bodies["L"] | {self.tool_bid}
         self.device_bids = {self.m.body(b).id for b in ("remote_body", "remote_cover")}
