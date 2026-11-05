@@ -113,7 +113,7 @@ DEVICES = {
     "stb_remote": RemoteSpec(name="stb_remote", label="셋톱박스 리모컨 (AAA)", length=0.165, width=0.046, thick=0.019,
                              cell=AAA, body_material="plastic_mouse", sticker_material="sticker_stb",
                              cell_materials=["battery_b", "battery_b"]),
-    "ac_remote": RemoteSpec(name="ac_remote", label="에어컨 리모컨", length=0.150, width=0.058, thick=0.026,
+    "ac_remote": RemoteSpec(name="ac_remote", label="에어컨 리모컨", length=0.150, width=0.058, thick=0.026, spring_k=300.0,
                             body_material="plastic_clock", sticker_material="sticker_ac"),
     "light_remote": RemoteSpec(name="light_remote", label="조명 리모컨 (AAA)", length=0.130, width=0.046, thick=0.019,
                                cell=AAA, body_material="navy", sticker_material="sticker_light",

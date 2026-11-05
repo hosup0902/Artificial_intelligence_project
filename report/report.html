@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>과제 2 최종 리포트 — 폐가전 리모컨 건전지 분리 (양팔 SO-101 + 분해 공구)</title>
+<style>
+  @page { size: A4; margin: 17mm 16mm 18mm 16mm; }
+  :root { --ink:#1b1f24; --muted:#5b6470; --accent:#b4321f; --line:#d9dde3; --tint:#f4f6f8; --ok:#1f7a4d; }
+  html { font-family: "Noto Sans CJK KR", "NanumGothic", sans-serif; color: var(--ink); font-size: 10.2pt; line-height: 1.62; }
+  body { margin: 0; }
+  h1 { font-size: 21pt; margin: 0 0 4pt; line-height: 1.3; }
+  h2 { font-size: 15pt; margin: 20pt 0 6pt; padding-bottom: 3pt; border-bottom: 1.2pt solid var(--ink); break-after: avoid; }
+  h3 { font-size: 11.8pt; margin: 13pt 0 4pt; break-after: avoid; }
+  h4 { font-size: 10.6pt; margin: 9pt 0 3pt; break-after: avoid; }
+  p { margin: 4pt 0 6pt; text-align: justify; }
+  ul, ol { margin: 3pt 0 7pt; padding-left: 17pt; }
+  li { margin: 1.5pt 0; }
+  table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 8.9pt; line-height: 1.45; break-inside: auto; }
+  th, td { border: 0.6pt solid var(--line); padding: 3pt 5pt; vertical-align: top; text-align: left; }
+  th { background: var(--tint); font-weight: 700; }
+  tr { break-inside: avoid; }
+  td.n, th.n { text-align: right; white-space: nowrap; }
+  .cover { height: 245mm; display: flex; flex-direction: column; justify-content: space-between; break-after: page; }
+  .cover .kicker { font-size: 11pt; color: var(--muted); letter-spacing: .5pt; }
+  .cover h1 { font-size: 27pt; margin-top: 10pt; }
+  .cover .sub { font-size: 13pt; color: var(--muted); margin-top: 6pt; }
+  .cover img { width: 100%; border-radius: 4pt; margin: 14pt 0; }
+  .cover .meta { font-size: 10.5pt; line-height: 1.8; }
+  .stats { display: flex; gap: 8pt; margin: 8pt 0 10pt; }
+  .stat { flex: 1; background: var(--tint); border-radius: 5pt; padding: 7pt 9pt; }
+  .stat b { display: block; font-size: 17pt; line-height: 1.2; }
+  .stat span { font-size: 8.6pt; color: var(--muted); }
+  figure { margin: 7pt 0 10pt; break-inside: avoid; }
+  figure img { width: 100%; display: block; border-radius: 3pt; }
+  figcaption { font-size: 8.6pt; color: var(--muted); margin-top: 3pt; }
+  .row { display: flex; gap: 7pt; }
+  .row figure { flex: 1; margin: 0; }
+  .note { background: #fff6e8; border: 0.6pt solid #f0d49c; border-radius: 4pt; padding: 6pt 9pt; margin: 7pt 0 9pt; font-size: 9.2pt; break-inside: avoid; }
+  .tag { display: inline-block; font-size: 7.8pt; font-weight: 700; padding: 0 4pt; border-radius: 3pt; color: #fff; }
+  .E { background: #2f6fa5; } .P { background: #b4321f; } .EP { background: #6b4fa0; }
+  .toc { columns: 2; font-size: 9.6pt; margin: 6pt 0; }
+  .toc div { break-inside: avoid; }
+  code { font-family: "DejaVu Sans Mono", monospace; font-size: 8.4pt; background: var(--tint); padding: 0 2pt; border-radius: 2pt; }
+  pre { font-family: "DejaVu Sans Mono", monospace; font-size: 8pt; background: var(--tint); padding: 6pt 8pt; border-radius: 3pt; white-space: pre-wrap; break-inside: avoid; }
+  .bar { display:flex; align-items:center; gap:6pt; font-size:8.6pt; margin:2pt 0; }
+  .bar .lab { width: 150pt; flex: none; }
+  .bar .trk { flex:1; height: 10pt; background: var(--tint); border-radius: 2pt; position: relative; }
+  .bar .fil { height: 100%; border-radius: 2pt; background: #2f6fa5; }
+  .bar .fil.p2 { background: #b4321f; }
+  .bar .val { width: 70pt; flex: none; text-align: right; font-weight: 700; }
+  .pb { break-before: page; }
+  .small { font-size: 8.8pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div>
+    <div class="kicker">인공지능프로젝트 과제 2 · 로봇 시뮬레이션 환경 구축 및 정책 설계 · 최종 리포트</div>
+    <h1>폐가전 전처리: 양팔 SO-101과 얇은 분해 공구로<br>리모컨 건전지 분리하기</h1>
+    <div class="sub">실제와 같은 고정 구조(+ 단자 립, − 단자 스프링)에서 공구로 밀고 들어 올려 빼는 바이매뉴얼 조작</div>
+    <img src="assets/start_hero.jpg" alt="양팔 작업대">
+    <div class="stats">
+      <div class="stat"><b>80/80</b><span>주 평가 성공률<br>4기기 × seed 0–19</span></div>
+      <div class="stat"><b>79/80</b><span>추가 검증 성공률<br>4기기 × seed 20–39 (개발에 안 쓴 seed)</span></div>
+      <div class="stat"><b>0/20 · 0/20</b><span>대조실험 (뒤집기만 / 밀기만)<br>수거함에 들어간 셀 0/40 · 0/40</span></div>
+      <div class="stat"><b>32.6 N</b><span>기기에 걸린 최대 접촉력<br>(판정 기준 40 N)</span></div>
+    </div>
+  </div>
+  <div class="meta">
+    2024315782 이호섭 · 제출 2026-11-10<br>
+    시뮬레이터: SO101-Nexus 0.10.0 (MuJoCo 3.17.0) · 정책: LLM(Claude, Claude Code)이 작성한 스킬 함수 + 상태 머신<br>
+    코드: <code>code/</code> (README 참조) · 프롬프트: <code>code/PROMPTS_phase1.md</code>, <code>code/PROMPTS_phase2.md</code>
+  </div>
+</section>
+
+<h2 style="margin-top:0">요약</h2>
+<p>소형 폐가전을 파쇄하기 전에 교체형 원통형 건전지(AA/AAA)를 빼내는 해체 작업을 SO101-Nexus 시뮬레이터에서 정의하고 풀었다.
+리모컨 4종(TV, 셋톱박스(AAA), 에어컨, 조명(AAA))의 배터리 칸은 실제 제품처럼 + 끝이 고정 립 밑에, − 끝이 코일 스프링에 고정되어 있어,
+커버를 열고 뒤집거나 흔들어도, 셀을 스프링 쪽으로 밀기만 해도 빠지지 않는다(대조실험 0/20, 0/20).
+SO-101 두 대가 사람 작업자의 두 손처럼 일한다. 주 팔(R)은 리모컨을 지그에 붙이고 래치 커버를 눌러 밀어 연 뒤 리모컨을 붙잡고,
+공구 팔(L)은 거치대에서 얇은 분해 공구(T자 갈고리 팁)를 꺼내 notch에 넣어 두 셀을 스프링 쪽으로 밀어 립을 지나게 하고 + 끝을
+지렛대로 들어 립 위에 얹는다. 이어서 R이 리모컨을 폐건전지 수거함 위에서 뒤집고 흔들어 셀을 떨어뜨리고, 빈 본체를 소형 폐가전 상자에 넣는다.
+정책은 LLM이 작성한 스킬 함수와 상태 머신이며, 측정값 기반 폐루프 보정과 재시도를 포함한다.
+고정된 최종 코드로 4기기 × seed 0–19 = 80회 평가에서 <b>80/80(100 %)</b>, 개발 중 한 번도 쓰지 않은 seed 20–39 80회에서 <b>79/80(98.8 %)</b>을 얻었다.</p>
+<p>이 결과에는 두 단계의 시행착오가 있다. <b>Phase 1</b>(중간 발표, 팔 1대)에서는 그리퍼가 셀 + 끝을 들어 올릴 수 없어 "밀면 + 끝이 바닥
+지지대 때문에 저절로 들리는" 단순화를 썼고, TV 리모컨만 동작했다(중간 발표 10/10, 재측정 7/10, 다른 기기 0/6).
+<b>Phase 2</b>(최종)에서는 이 단순화를 없애고 팔을 2대로 늘려 공구를 쓰게 했으며, 20차례가 넘는 평가–분석–수정 반복으로 4기기 모두를 성공시켰다.
+5장에 두 단계의 실패 원인과 개선 전후 수치를 환경 설계 문제와 정책 문제로 구분해 정리했다.</p>
+
+<div class="toc">
+  <div>1. Task Definition — 시나리오와 선택 이유</div>
+  <div>2. Environment Design — 에셋·배치·카메라·초기 자세·기구</div>
+  <div>3. Policy — 방식과 이유, 구조, 스킬, LLM 사용</div>
+  <div>4. Evaluation — 조건, 성공률, 보조 지표, 대조실험</div>
+  <div>5. Failure Analysis — Phase 1·2 실패 원인과 전후 비교</div>
+  <div>6. Discussion — 잘 된 점, 한계, 개선 방향</div>
+  <div>부록 — 재현 방법, 파일 구성, 에셋 출처</div>
+</div>
+
+<!-- ===================================================================== 1 -->
+<h2>1. Task Definition</h2>
+
+<h3>1.1 문제와 범위</h3>
+<p>소형 폐가전은 파쇄·선별 전에 배터리 같은 위험 부품을 분리해야 한다. 배터리는 크게 커버를 열고 빼는 <b>교체형</b>과 접착된 <b>내장형</b>이 있다.
+내장형은 하우징을 뜯어야 하는 별도 문제라 <b>범위 밖(향후 과제)</b>으로 두고, 이번에는 <b>교체형 원통형 셀(AA, AAA)이 든 리모컨</b>을 대상으로 한다.
+셀 종류가 달라도 "− 끝 스프링 + + 끝 걸림 턱" 방식은 같아서 같은 동작 순서로 뺄 수 있다는 점이 대상 선택의 근거다.</p>
+<p>동기에 대해서는 과장을 피한다. 리모컨 건전지 자체가 큰 산업 문제라고 주장하지 않으며(출처를 확인하지 못한 "폐기물 화재의 주원인" 같은 주장은 쓰지 않는다),
+<b>파쇄 전 위험 부품 분리 공정의 대표 사례</b>로서 <b>접촉이 많은 분해 동작</b>(래치 커버 해제, 스프링·립 걸림 해제, 공구 사용, 양팔 협조, 뒤집어 빼기)을 다룬다는 데 의미를 둔다.</p>
+
+<h3>1.2 시나리오</h3>
+<table>
+  <tr><th style="width:17%">항목</th><th>내용</th></tr>
+  <tr><td><b>환경</b></td><td>국내 소형 폐가전 해체 작업장의 작업대(강철 작업대 + ESD 매트). 해체 지그(펜스 2면) 위에 폐 리모컨 1개가 <b>배터리 면을 위로</b> 놓여 있다(위치·각도는 seed마다 무작위).
+  지그 왼쪽에 빨간 <b>폐건전지 수거함</b>, 앞쪽에 파란 <b>소형 폐가전 상자</b>, 지그 건너편에 공구 거치대. SO-101 두 대: 주 팔 R(작업대 원점), 공구 팔 L(지그 건너편, 마주 봄).</td></tr>
+  <tr><td><b>수행 과정</b></td><td>
+    ① R: 리모컨을 지그 펜스에 밀어 붙임 ∥ L: 거치대에서 분해 공구를 집음 →
+    ② R: 래치 커버를 <b>누르면서 밀어</b> 분리(커버가 손가락에 끼면 펜스 너머에 버림), 리모컨 재정렬 →
+    ③ R: 리모컨 옆면을 잡아 지그에 고정 →
+    ④ L: 공구 팁을 pry notch에 넣고 두 셀을 스프링 쪽으로 밀어 + 끝이 립을 지나게 한 뒤, + 끝을 지렛대처럼 들어 립 위에 얹음(실패 시 최대 3회) →
+    ⑤ L: 물러남 → R: 다시 잡아 들어 올림 →
+    ⑥ R: 폐건전지 수거함 위에서 뒤집고 흔들어 셀을 떨어뜨림 ∥ L: 공구를 거치대에 반납 →
+    ⑦ R: 빈 본체를 소형 폐가전 상자에 넣음.</td></tr>
+  <tr><td><b>성공 판별</b></td><td>에피소드 종료 시 자동 판정(<code>battery_sim/success.py</code>), 네 조건 모두 만족:
+    (1) 모든 셀의 중심이 폐건전지 수거함 영역 안, (2) 본체 중심이 소형 폐가전 상자 영역 안(여유 10 mm),
+    (3) 상자 안에 셀이 없음(잘못 분류 방지), (4) 에피소드 동안 로봇(양팔 + 손에 든 공구)과 기기(본체·커버) 사이의 접촉점별 법선력 최댓값 ≤ 40 N.
+    공구 반납과 커버의 최종 위치는 판정하지 않는다(참고 지표).</td></tr>
+</table>
+<div class="note"><b>40 N에 대하여.</b> 표준이나 측정에서 온 파손 기준이 아니라, 기기를 부수거나 과도한 힘으로 해결하는 정책을 막기 위한 <b>임의의 보수적 상한</b>이다.
+측정 대상은 접촉점 하나의 법선력 최댓값이며 셀과의 접촉은 제외한다. 서보 최대 토크로 쥐면 42.6 N이 나와(Phase 1), 힘 제한 파지를 넣었다.</div>
+
+<h3>1.3 선택 이유 (참신성·난이도)</h3>
+<ul>
+  <li><b>기본 제공 태스크가 아닌 실제 공정</b>: 폐가전 전처리의 수작업(배터리 분리)을 그대로 옮겼다. 주제는 여러 후보(물건 포장, 셀프 계산대 등)와 비교한 뒤 정했다(프롬프트 기록 참조).</li>
+  <li><b>정밀 접촉</b>: 셀과 립 사이 틈 0.5 mm, 립 길이 4.5 mm, 공구 블레이드 두께 0.8 mm. 몇 mm 오차로 성패가 갈린다.</li>
+  <li><b>공구 사용</b>: 로봇이 공구를 집고, 손 안에서의 공구 자세를 측정해 보정하며 사용한다.</li>
+  <li><b>양팔 협조</b>: 한 팔이 잡고 한 팔이 공구질을 하며, 두 팔의 작업 공간이 겹쳐 충돌을 피해야 한다.</li>
+  <li><b>5자유도 팔의 자세 제약</b>: SO-101은 관절이 5개라 위치 3 + 방향 3을 동시에 맞출 수 없어, 뒤집기·파지·공구 자세 모두 계획이 필요하다.</li>
+  <li><b>기구 상호작용과 일반화</b>: 래치·스프링·립이 있는 기구, 4종 기기(AA 2종, AAA 2종), 무작위 배치.</li>
+</ul>
+
+<!-- ===================================================================== 2 -->
+<h2>2. Environment Design</h2>
+
+<h3>2.1 장면 구성과 근거</h3>
+<figure><img src="assets/start_wide.jpg"><figcaption>그림 1. 작업장 전경(<code>wide</code> 카메라). 녹색 에폭시 바닥, 샌드위치 패널 벽, 안전 포스터, 타공판 공구 걸이, 해체 작업대.</figcaption></figure>
+<p>SO101-Nexus 0.10.0이 제공하는 SO-101 MJCF(MuJoCo Menagerie 기반, Apache-2.0)와 STS3215 서보 위치 제어 게인을 그대로 쓰고,
+장면은 <code>battery_sim/scene.py</code>에서 직접 생성한다. 국내 소형 폐가전 해체 라인을 상정해 꾸몄으며 <b>실제 현장 사진을 참고한 것은 아니다</b>.</p>
+<table>
+  <tr><th style="width:19%">요소</th><th style="width:40%">구성</th><th>현실성·타당성 근거</th></tr>
+  <tr><td>공장 배경</td><td>녹색 에폭시 바닥(z = −0.85 m), 샌드위치 패널 벽, 천장 조명, 한글 안전 포스터, 바닥 안전 테이프</td><td>재활용·해체 작업장의 전형적 외관</td></tr>
+  <tr><td>작업대</td><td>강철 작업대 + ESD 매트, 타공판(공구 걸이), 선반, 작업등</td><td>전자제품 해체 작업대의 표준 구성(정전기 방지)</td></tr>
+  <tr><td>해체 지그</td><td>지그 판 + L자 펜스 2면, 윗면 z = 6 mm</td><td>기기를 일정 위치로 맞추는 위치결정 지그. 펜스에 밀어 붙여 위치 오차를 줄인다</td></tr>
+  <tr><td>폐건전지 수거함</td><td>빨간 상자, 11 × 17 × 8.5 cm, 중심 (0.12, 0.30) m, 바닥 두께 12 mm</td><td>국내 폐건전지 수거함의 색·라벨. 위치·크기는 5자유도 팔의 뒤집기 도달 범위 분석으로 결정(5.1)</td></tr>
+  <tr><td>소형 폐가전 상자</td><td>파란 상자, 18 × 24 × 7.5 cm, 중심 (0.075, −0.27) m</td><td>소형 폐가전 분리배출</td></tr>
+  <tr><td>공구 거치대 + 분해 공구</td><td>포크형 거치대(중심 (0.32, −0.14) m, 판 높이 46 mm). 공구: 고무 손잡이 11 × 22 × 55 mm, 얇은 강철 샤프트,
+  <b>T자 팁</b> — 넓은 블레이드 ±8 mm(두 셀의 + 끝면을 동시에 밂), 좁은 목 ±4 mm(두 립 사이 9.6 mm 틈 통과), 두께 0.8 mm, 10° 꺾인 갈고리 발</td>
+  <td>중간 발표에서 예고한 "얇은 스패너형 분해 공구(spudger)". 공구를 늘 같은 자세로 꺼내고 넣도록 포크형 거치대 사용</td></tr>
+  <tr><td>장식 공구</td><td>드라이버, 가위, 마커(YCB), 테이프 2종, C-클램프(Google Scanned Objects) 3D 스캔 메시, 대기 상자, 톤백</td><td>실제 물체 스캔으로 현실감. 모두 팔이 닿지 않는 곳에 정적으로 배치해 태스크에 간섭하지 않음</td></tr>
+  <tr><td>조명·카메라</td><td>천장 확산광 3개 + 작업등. 카메라 9개: <code>overview, hero, operator, wide, closeup, top, side, bincam, slotcam</code></td><td>평가·영상·실패 분석용(예: <code>slotcam</code>은 pry notch 근접)</td></tr>
+  <tr><td>로봇</td><td>주 팔 R: 베이스 원점, +x 향함. 공구 팔 L: 같은 MJCF를 복제해 이름 앞에 <code>l_</code>, 베이스 (0.50, 0, 0), yaw 180°(마주 봄)</td><td>사람 작업자의 두 손 역할. 서로 마주 보게 놓아 지그를 사이에 둠</td></tr>
+  <tr><td>초기 자세</td><td>두 팔 모두 HOME = (pan 0°, lift −100°, elbow 40°, wrist_flex 80°, roll 0°), 그리퍼 0</td><td>작업 공간 밖으로 접힌 자세</td></tr>
+</table>
+<p>모든 작업 대상(지그, 수거함, 상자, 기기, 공구 거치대)은 SO-101 위쪽 도달 거리(약 0.36 m) 안에 있다. 물리 설정은 timestep 2 ms, implicitfast 적분,
+elliptic 마찰 원뿔, impratio 10, 제어 주기 20 ms(50 Hz). 장면 전체를 메모리에서 컴파일해(<code>load_model</code>) 한글 경로에서도 실행된다(MuJoCo는 비ASCII 경로 파일을 열지 못함).</p>
+
+<h3>2.2 기기 4종</h3>
+<figure><img src="assets/devices.jpg"><figcaption>그림 2. 리모컨 4종(위: 커버 닫힘, 아래: 커버 제거). 본체 재질과 스티커 텍스처가 서로 다르다.</figcaption></figure>
+<table>
+  <tr><th>기기</th><th class="n">길이 × 폭 × 두께 (mm)</th><th>셀</th><th class="n">셀 간격</th><th class="n">− 단자 스프링</th></tr>
+  <tr><td><code>tv_remote</code> TV 리모컨</td><td class="n">180 × 50 × 22</td><td>AA ×2 (14.5 × 50.5 mm, 23 g)</td><td class="n">16 mm</td><td class="n">300 N/m</td></tr>
+  <tr><td><code>stb_remote</code> 셋톱박스 리모컨</td><td class="n">165 × 46 × 19</td><td>AAA ×2 (10.5 × 44.5 mm, 11.5 g)</td><td class="n">14 mm</td><td class="n">150 N/m</td></tr>
+  <tr><td><code>ac_remote</code> 에어컨 리모컨</td><td class="n">150 × 58 × 26</td><td>AA ×2</td><td class="n">16 mm</td><td class="n">300 N/m</td></tr>
+  <tr><td><code>light_remote</code> 조명 리모컨</td><td class="n">130 × 46 × 19</td><td>AAA ×2</td><td class="n">14 mm</td><td class="n">150 N/m</td></tr>
+</table>
+<p class="small">셀 치수·질량은 IEC 규격. 스프링은 모두 0.6 N 예압. 셀 간격과 스프링 강도는 5장의 실패 분석 결과로 정해졌다(AAA 간격 19 → 16 → 14 mm, TV·에어컨 400 → 300 N/m).</p>
+
+<h3>2.3 배터리 칸 — 실제와 같은 고정 구조 (핵심 설계)</h3>
+<figure><img src="assets/fig_pry_mechanism.png"><figcaption>그림 3. 최종 배터리 칸의 고정·해제 원리(개념도). 셀을 빼려면 ②밀기와 ③들기를 모두 해야 한다.</figcaption></figure>
+<ul>
+  <li><b>커버</b>: 별도 강체. 옆 레일과 뒷벽 때문에 +x로만 빠진다. 스냅 래치는 weld 구속이며, <b>커버를 1 N 이상 누른 채 +x로 1.5 N 이상 미는 상태가 10 step(20 ms) 연속</b>될 때만
+  환경 코드가 해제한다(실제 래치 탭처럼 누르면서 밀어야 열림).</li>
+  <li><b>− 단자</b>: 코일 스프링 플런저(slide joint + stiffness), 예압 0.6 N, 행정 10 mm, 포켓 높이만큼 키 큰 접점판, 금속 마찰 0.12.</li>
+  <li><b>+ 단자 고정 립</b>: 각 셀 + 끝 위를 4.5 mm 덮는 강체 탭. 셀 꼭대기와 립 아랫면 사이 틈 0.5 mm. 두 립 사이 간격 <b>9.6 mm &lt; 가장 가는 셀(AAA 10.5 mm)</b>이라 뒤집어도 셀이 빠지지 않는다.</li>
+  <li><b>pry notch</b>: + 끝 뒤 폭 18 mm, 길이 10 mm, 바닥 3 mm 낮음. 홈(recess)이 셀 밑으로 16 mm 이어져 공구의 넓은 갈고리 발이 두 셀 + 끝 밑까지 들어간다(실제 배터리 홀더의 손톱·드라이버 홈).</li>
+  <li><b>포켓</b>: 깊이 = 셀 지름 + 1.9 mm. 셀은 바닥에 평평하게 놓인다(Phase 1의 "저절로 들리게 하는 바닥 지지대" 삭제).</li>
+  <li><b>접촉</b>: 11–23 g짜리 가벼운 부품은 <code>solref 0.005</code>(딱딱한 접촉). MuJoCo 기본(질량 비례 연성 접촉)으로는 공구가 셀 속으로 수 mm 파고들었다. 셀 마찰 0.25, 포켓 옆벽 0.2.</li>
+</ul>
+<p>결과적으로 셀을 빼려면 + 끝을 립 길이보다 더 스프링 쪽으로 밀고(AA 6.2 mm, AAA 립 끝 + 1.1 mm), <b>그 상태로 + 끝을 립 윗면보다 위로 들어야</b> 한다.
+밀기만 하면 스프링이 셀을 립 밑으로 다시 밀어 넣고, 뒤집기만 하면 립에 걸린다. 이를 두 가지로 검증했다: (a) 공구 없이 기기를 뒤집어 놓고 ±3 g로 흔드는
+보유력 시험(<code>dev_tools/retention_test.py</code>, 4기기 모두 셀 이동 5 mm 이하), (b) 실제 정책의 대조실험(4.4절, 0/20 · 0/20).</p>
+
+<h3>2.4 초기 상태 무작위화와 안정성 확인</h3>
+<p>seed마다 리모컨(+ 커버 + 셀을 한 덩어리로)을 공칭 위치 (0.205, 0.005) m 기준으로 <b>dx ∈ [−20, 0] mm, dy ∈ [−12, +22] mm, yaw ∈ [−0.25, +0.25] rad(±14.3°)</b>
+균일 무작위로 놓고 0.5 s 안정화한 뒤 시작한다. 마찰·질량은 고정. 같은 seed는 같은 초기 상태를 만들고 정책이 결정적이므로 결과가 재현된다.
+안정화 후 셀·커버·본체가 의도한 자리에 놓였는지는 시작 시점의 셀 상태(<code>cell_state</code>: + 끝 위치 0.0 mm, 기울기 0°)로 매 에피소드 확인된다.</p>
+
+<!-- ===================================================================== 3 -->
+<h2>3. Policy</h2>
+
+<h3>3.1 방식과 이유: LLM이 작성한 스킬 함수 + 상태 머신</h3>
+<p>과제가 허용하는 "LLM이 작성한 직접 작성 정책"이다. 스킬 함수(저수준 동작)와 스킬 호출 코드(상태 머신)를 모두 LLM이 생성했고, 학생이 매번 실행해 검증했다.
+<b>매 step의 저수준 action을 LLM이 출력하지 않으며 평가 중 LLM 호출은 없다</b>(결정적·재현 가능). 이 방식을 택한 이유를 두 가지로 나누어 적는다.</p>
+<ul>
+  <li><b>강화학습·모방학습이 어려운 이유</b>: 에피소드가 길고(약 70 s, 제어 약 3,500 step) 성공 보상이 끝에만 있다. 래치(누르며 밀기), 립(밀고 들기), notch처럼
+  좁은 조건을 무작위 탐색으로 찾기 어렵다. 양팔·공구 시연 데이터를 사람이 모으기도 어렵다. GPU 없이 에피소드당 실제 30–40 s가 걸려 학습 예산이 부족하다.</li>
+  <li><b>스크립트가 맞는 이유</b>: 단계가 뚜렷해 스킬로 나누기 쉽고, mm 단위 정밀 접촉을 기하로 직접 다룰 수 있으며, 단계 이름이 로그에 남아 실패 지점을 추적하기 쉽다.</li>
+</ul>
+<p><b>LLM 사용 정보.</b> 도구: Anthropic Claude의 에이전트형 코딩 도구 <b>Claude Code</b>. 모델명과 버전은 <code>code/PROMPTS_phase1.md</code> 머리말에 기록했다(두 단계 모두 같은 모델).
+프롬프트 원문 전체: Phase 1 35개(<code>PROMPTS_phase1.md</code>), Phase 2 8개(<code>PROMPTS_phase2.md</code>). 생성된 코드: <code>code/</code> 전체.
+대화는 "한 번의 프롬프트"가 아니라 여러 턴이며, Claude가 코드를 작성·실행하고 시뮬레이션 로그·접촉력·렌더링을 보고 원인을 찾아 고치는 방식이었다.
+학생은 목표·범위·방향(예: "양팔로", "공구를 써서", "실제와 같은 구조로", "80/80이 될 때까지")을 지시하고, 결과와 설명을 검토했다.</p>
+
+<h3>3.2 구조</h3>
+<ul>
+  <li><b>인지</b>: 시뮬레이터 상태값(기기·셀·공구의 자세, 접촉력, 그리퍼 각도)을 카메라·촉각 센서 대신 쓴다(한계, 6.2).</li>
+  <li><b>IK</b>: 감쇠 최소제곱(DLS, <code>ik.py</code>). TCP 또는 공구 팁 위치 + 지정한 축 방향(접근 방향, 조 방향)만 맞춘다(5자유도).</li>
+  <li><b>저수준 제어</b>: 관절 위치 서보(STS3215 게인). 그리퍼는 서보 힘 제한(잡은 기기 18–30 N)과 점진 파지(<code>compliant_close</code>).</li>
+  <li><b>동시 실행</b>: 모든 스킬은 파이썬 제너레이터(제어 tick마다 <code>yield</code>). <code>run_par(g1, g2)</code>가 두 팔의 스킬을 tick 단위로 번갈아 진행해 양팔이 실제로 동시에 움직인다(예: R이 커버를 여는 동안 L이 공구를 집음).</li>
+  <li><b>상태 머신</b>: 아래 표의 단계를 순서대로 실행. 각 단계는 측정값으로 성공을 판정해 기록하고, 실패하면 정해진 재시도·복구를 한다.</li>
+</ul>
+<table>
+  <tr><th style="width:15%">단계(스킬)</th><th style="width:5%">팔</th><th>하는 일</th><th style="width:24%">피드백·판정</th></tr>
+  <tr><td><code>push_to_fence</code></td><td>R</td><td>닫은 그리퍼로 리모컨 윗면을 눌러 마찰로 끌어 앞 끝을 펜스에 붙임</td><td>측정한 펜스 간격·yaw</td></tr>
+  <tr><td><code>pick_tool</code></td><td>L</td><td>거치대에 낮게 −x 방향으로 접근, 손잡이를 폭(22 mm) 방향으로 집고 4 mm 들어 −x로 빼냄. 손 안의 공구 자세를 측정해 저장(<code>calibrate_tool</code>)</td><td>공구 위치, 파지력 &gt; 5 N</td></tr>
+  <tr><td><code>slide_cover</code></td><td>R</td><td>커버 래치를 누르면서 +x로 밀어 분리. 커버가 손가락에 끼면 펜스 너머에 버림(<code>drop_cover</code>)</td><td>래치 해제 여부, 커버 이동량</td></tr>
+  <tr><td><code>reseat_on_fence</code></td><td>R</td><td>커버를 미는 동안 밀린 리모컨을 다시 펜스에 붙임(참고용)</td><td>펜스 간격</td></tr>
+  <tr><td><code>hold_device</code></td><td>R</td><td>리모컨 뒤쪽 단단한 부분을 폭 방향으로 집어 지그에 고정. 공구 팔과 손목이 부딪히지 않게 20° 뒤로 기울여 접근.
+  5자유도 IK의 위치 오차를 <b>목표 사전 보정</b>으로 없앰(고정 조가 옆면 1 mm 바깥에 오도록). 움직이는 조에 힘이 없으면 2 mm 바깥으로 재파지</td><td>움직이는 조 접촉력, 파지력</td></tr>
+  <tr><td><code>pry_cells</code></td><td>L</td><td>3.3절. 최대 3회</td><td>셀 + 끝 위치·높이·기울기(실측)</td></tr>
+  <tr><td><code>tool_retreat</code></td><td>L</td><td>공구를 기기에서 떼어 거치대 입구 쪽으로(R의 재파지 공간 확보)</td><td>—</td></tr>
+  <tr><td><code>grasp_device</code></td><td>R</td><td>놓았다가 위에서 다시 잡아 들어 올림(힘 제한)</td><td>들림 높이 &gt; 6 cm</td></tr>
+  <tr><td><code>flip_over_bin</code></td><td>R</td><td>계획된 경로(3.4)로 수거함 위에서 뒤집고 ±0.08 rad로 흔듦</td><td>셀이 수거함에 들어갔는지</td></tr>
+  <tr><td><code>return_tool</code></td><td>L</td><td>공구를 포크 거치대에 다시 꽂음(성공 기준 아님)</td><td>공구 위치</td></tr>
+  <tr><td><code>drop_in_crate</code></td><td>R</td><td>빈 본체의 긴 축을 수평으로 유지하며 상자 위에 가져가 놓음(격자 탐색)</td><td>본체 위치</td></tr>
+</table>
+
+<h3>3.3 공구 스킬 <code>pry_cells</code> (가장 어려운 부분)</h3>
+<div class="row">
+  <figure><img src="assets/pry_in.jpg"><figcaption>(a) 블레이드를 notch에 수직으로 넣음</figcaption></figure>
+  <figure><img src="assets/pry_push.jpg"><figcaption>(b) 두 셀을 스프링 쪽으로 밂</figcaption></figure>
+  <figure><img src="assets/pry_lift.jpg"><figcaption>(c) + 끝을 지렛대로 들어 올림</figcaption></figure>
+</div>
+<figcaption style="margin-bottom:8pt">그림 4. TV 리모컨 seed 5의 실제 pry 장면(<code>closeup</code> 카메라). 주 팔(왼쪽)이 리모컨을 잡고, 공구 팔(오른쪽)이 공구를 쓴다.</figcaption>
+<ol>
+  <li><b>공구 보정</b>: 손 안의 공구 자세(그리퍼 TCP 대비 팁 위치·방향)를 측정 → 이후 모든 IK는 공구 팁 기준.</li>
+  <li><b>접근</b>: 공구를 10° 뒤로 기울인 채 notch 위로(wrist_flex ±95° 한계 때문). notch 위에서의 수직 자세가 도달 가능하면(IK 오차 &lt; 1.5 mm, 얇은 AAA 기기)
+  위에서 블레이드를 세운 뒤 수직 하강, 아니면(두꺼운 TV·에어컨) 기울인 채 내려가 바닥에서 세운다.</li>
+  <li><b>폐루프 팁 보정</b>(<code>correct</code>): 실측 팁 위치로 0.3 mm 이내가 될 때까지 다시 겨냥(팔이 막히면 중단).</li>
+  <li><b>밀기</b>: 0.5 mm씩 +x로 밀며 두 셀 + 끝 위치를 측정. 두 셀 모두 목표(AA 6.2 mm, AAA 립 + 1.1 mm)를 넘거나 실측 팁이 9.5 mm에 닿으면 정지.
+  한 셀만 앞서면, 늦은 셀도 블레이드 뒷면이 립 끝을 지난 위치(립 + 1.2 mm)일 때만 조기 정지. 블레이드 yaw를 측정해 손목 roll로 보정.</li>
+  <li><b>들기(지렛대)</b>: 1.5 mm씩 올리며 공구를 0° → 10°로 점점 기울임. 두 + 끝 높이를 측정해 2 mm 넘게 차이 나면 높이를 유지하고 발을 늦은 셀 쪽으로 옆 이동.
+  팁의 옆 오차는 감쇠·상한이 있는 적분 보정. 기기가 0.8 mm 이상 들리면(블레이드가 립에 걸림) 다시 내려서 더 밀고 재시도. 셀이 과하게 밀리면 공구를 살짝 뒤로.</li>
+  <li><b>립 위에 얹기</b>: 두 + 끝 바닥이 립 윗면 + 1.5 mm를 넘으면 발을 립 위로 올린 채 −x로 되돌림 → 스프링이 셀을 밀어 + 끝이 립 위에 얹힘.</li>
+  <li><b>빠지기</b>: 내려서 발을 빼고 옆(−y)으로 빠진다(들린 셀 끝을 치지 않게).</li>
+  <li><b>판정·재시도</b>: 두 + 끝 바닥이 커버 아랫면 − 0.5 mm 이상이고 포켓 안이면 성공. 아니면 재시도(한 셀만 빠졌으면 그 셀 쪽으로 1.1 mm 이동, 진입 위치를 notch 뒤쪽으로).</li>
+</ol>
+
+<h3>3.4 뒤집기 계획 <code>plan_flip</code></h3>
+<p>5자유도 팔로 물체를 뒤집을 수 있는 자세는 제한적이다. 무작위 관절 샘플링(12만 개) → 잡은 순간의 그리퍼–기기 관계로 기기 자세 예측 → 상위 200 후보에 대해
+roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 경로, 셀 쏟아짐 방지 조건(운반 중 roll ≤ 30°, pitch −30~+20°), MuJoCo 충돌 검사를 통과하는 경로 중
+착지점이 수거함 조준점에 가장 가까운 것을 고른다. 이어서 ±0.08 rad로 흔들고, 뒤집힌 채 1.3 s 들어 셀이 빠지게 한다.</p>
+
+<h3>3.5 Phase 1 → Phase 2 정책 변화</h3>
+<table>
+  <tr><th style="width:18%"></th><th>Phase 1 (중간 발표, 11/2–11/6)</th><th>Phase 2 (최종, 11/5–11/6)</th></tr>
+  <tr><td>로봇</td><td>SO-101 1대</td><td>SO-101 2대(주 팔 R + 공구 팔 L)</td></tr>
+  <tr><td>걸림 해제</td><td>손가락 홈에 그리퍼 끝을 넣어 셀을 5.3 mm 밀기만 함. + 끝은 바닥 지지대(0.8 mm) 때문에 <b>저절로 3–5° 들림</b>(환경이 대신한 단순화)</td>
+  <td>얇은 공구로 밀고 <b>직접 들어 올림</b>. 바닥 지지대 삭제, 립 + 스프링 + notch</td></tr>
+  <tr><td>기기 고정</td><td>펜스에 붙이기만 함</td><td>주 팔이 옆면을 잡아 고정(사람의 다른 손)</td></tr>
+  <tr><td>단계</td><td>fence → cover → reseat → unlatch → grasp → flip → crate</td><td>fence ∥ pick_tool → cover → reseat → hold → pry → retreat → grasp → flip ∥ return_tool → crate</td></tr>
+  <tr><td>결과</td><td>TV만 동작(재측정 7/10), 다른 기기 0/6</td><td>4기기 80/80(100 %) + 추가 검증 79/80(98.8 %)</td></tr>
+</table>
+
+<!-- ===================================================================== 4 -->
+<h2>4. Evaluation</h2>
+
+<h3>4.1 평가 조건</h3>
+<ul>
+  <li><b>seed</b>: 주 평가 seed 0–19(기기당 20개, 과제 권장 20개 이상) × 4기기 = 80 에피소드. 추가 일반화 검증: <b>개발 중 한 번도 쓰지 않은</b> seed 20–39 × 4기기 = 80 에피소드.</li>
+  <li><b>고정 조건</b>: 최종 코드를 고정한 채 같은 seed, 같은 성공 기준(1.2절), 같은 무작위화 범위(2.4절). 평가 중 코드·파라미터 변경 없음.</li>
+  <li><b>명령</b>: <code>python run_episode.py --seeds 0-19 --device &lt;기기&gt; -q --out result.json</code> (seed 20–39도 같은 명령).</li>
+  <li><b>기록 지표</b>(에피소드별 JSON): 성공, 셀별 수거함 여부, 본체 상자 여부, 상자 안 셀, 최대 접촉력과 발생 위치·시각, 최종 실패 단계, 시뮬레이션 시간, 물리 step 수(2 ms),
+  pry 시도 횟수, 공구 반납 여부, 실행 시간.</li>
+</ul>
+
+<h3>4.2 결과 — 주 평가 (seed 0–19)</h3>
+<table><tr><th>기기</th><th class='n'>성공</th><th class='n'>수거함 셀</th><th class='n'>최대 접촉력 평균 / 최대 (N)</th><th class='n'>시뮬레이션 시간 평균 (최소–최대, s)</th><th class='n'>물리 step 평균</th><th class='n'>pry 재시도 에피소드</th><th class='n'>공구 반납</th></tr><tr><td>TV 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.9 / 26.2</td><td class='n'>70.8 (68.8–74.2)</td><td class='n'>35,418</td><td class='n'>—</td><td class='n'>18/20</td></tr><tr><td>셋톱박스 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 25.8</td><td class='n'>69.8 (66.3–75.3)</td><td class='n'>34,880</td><td class='n'>—</td><td class='n'>20/20</td></tr><tr><td>에어컨 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>24.3 / 32.6</td><td class='n'>69.7 (68.0–72.9)</td><td class='n'>34,849</td><td class='n'>—</td><td class='n'>18/20</td></tr><tr><td>조명 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.7 / 25.9</td><td class='n'>69.3 (66.1–75.6)</td><td class='n'>34,658</td><td class='n'>—</td><td class='n'>20/20</td></tr><tr><td><b>합계</b></td><td class='n'><b>80/80 (100.0 %)</b></td><td class='n'>160/160</td><td class='n'>25.4 / 32.6</td><td class='n'>69.9</td><td class='n'>34,951</td><td class='n'>—</td><td class='n'>76/80</td></tr></table>
+<h3>4.3 결과 — 추가 검증 (seed 20–39, 개발에 쓰지 않은 seed)</h3>
+<table><tr><th>기기</th><th class='n'>성공</th><th class='n'>수거함 셀</th><th class='n'>최대 접촉력 평균 / 최대 (N)</th><th class='n'>시뮬레이션 시간 평균 (최소–최대, s)</th><th class='n'>물리 step 평균</th><th class='n'>pry 재시도 에피소드</th><th class='n'>공구 반납</th></tr><tr><td>TV 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>26.0 / 26.4</td><td class='n'>71.0 (68.9–74.2)</td><td class='n'>35,518</td><td class='n'>0</td><td class='n'>13/20</td></tr><tr><td>셋톱박스 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 26.0</td><td class='n'>72.5 (67.3–77.7)</td><td class='n'>36,252</td><td class='n'>0</td><td class='n'>20/20</td></tr><tr><td>에어컨 리모컨 (AA)</td><td class='n'><b>19/20</b></td><td class='n'>38/40</td><td class='n'>26.1 / 32.5</td><td class='n'>84.5 (68.3–358.8)</td><td class='n'>42,268</td><td class='n'>1</td><td class='n'>15/20</td></tr><tr><td>조명 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 25.9</td><td class='n'>71.2 (66.4–77.1)</td><td class='n'>35,624</td><td class='n'>0</td><td class='n'>20/20</td></tr><tr><td><b>합계</b></td><td class='n'><b>79/80 (98.8 %)</b></td><td class='n'>158/160</td><td class='n'>25.8 / 32.5</td><td class='n'>74.8</td><td class='n'>37,416</td><td class='n'>1</td><td class='n'>68/80</td></tr></table>
+<p>실패: ac_remote seed 20 (pry_cells). 기기에 걸린 최대 접촉력의 최댓값은 32.6 N(기준 40 N)이다. 시뮬레이션 시간은 에피소드당 약 70 s이며 실제 실행 시간은 클라우드 컨테이너에서 평균 약 35 s(4개 평가 동시 실행)였다. 공구 반납 실패는 성공 기준 밖의 참고 지표로, 공구가 포크 거치대에 끝까지 들어가지 않은 경우다.</p>
+<figure><img src="assets/tv_sheet.jpg"><figcaption>그림 5. 최종 정책의 실제 롤아웃(TV 리모컨 seed 5). 시작 → 펜스 → 공구 집기 → 커버 → 고정 → pry 4단계 → 재파지 → 뒤집기 → 상자. 조명(AAA) seed 15의 같은 그림은 <code>code/renders/final/</code>.</figcaption></figure>
+
+<h3>4.4 대조실험 — "구조가 실제와 같다"는 근거</h3>
+<p>같은 seed(0–4 × 4기기)와 같은 성공 기준에서 공구 스킬만 바꿨다(<code>python ablation.py --mode no_tool|push_only</code>).</p>
+<table>
+  <tr><th>실험</th><th>설명</th><th class="n">성공</th><th class="n">수거함에 들어간 셀</th></tr>
+  <tr><td><b>no_tool</b></td><td>공구를 쓰지 않고 커버만 연 뒤 주 팔이 뒤집고 흔듦("그냥 뒤집기")</td><td class="n">0/20</td><td class="n">0/40</td></tr>
+  <tr><td><b>push_only</b></td><td>공구로 셀을 스프링 쪽으로 밀기만 하고 들지 않음(= Phase 1 방식, "밀면 빠질 것")</td><td class="n">0/20</td><td class="n">0/40</td></tr>
+  <tr><td><b>full</b></td><td>전체 정책(밀고 + 들기)</td><td class="n">80/80</td><td class="n">160/160</td></tr>
+</table>
+<p>Phase 1의 대조실험(걸림 해제 생략)은 성공 0/10이었지만 셀 20개 중 6개가 수거함에 들어가는 "누수"가 있었다(5.1). Phase 2 구조에서는 누수가 0/80이다.
+즉 최종 환경에서는 셀이 립과 스프링에 실제처럼 고정되어 "밀고 + 들어 올리기"를 모두 해야만 빠진다.</p>
+
+<!-- ===================================================================== 5 -->
+<h2 class="pb">5. Failure Analysis</h2>
+<p>과제 요구에 따라 원인을 <span class="tag E">환경</span>(시뮬레이션 모델·기구 설계 문제)과 <span class="tag P">정책</span>(스킬·계획·제어 문제)으로 구분한다.
+두 가지가 겹친 경우 <span class="tag EP">환경+정책</span>. 실패는 로그(단계별 판정), 접촉 목록(어느 geom이 어느 geom을 몇 N으로 밀었는지), 셀 자세 추적,
+단계별 반투명 렌더링으로 분석했다(<code>code/dev_tools/</code>).</p>
+
+<h3>5.1 Phase 1 (팔 1대, 중간 발표까지)</h3>
+<div class="row">
+  <figure><img src="assets/p1_storyboard.jpg"><figcaption>그림 6. Phase 1 롤아웃(TV seed 5, 팔 1대). 그리퍼로 끌기 → 커버 → 밀어서 해제 → 잡기 → 운반 → 뒤집기 → 상자.</figcaption></figure>
+</div>
+<figure><img src="assets/p1_latch.jpg"><figcaption>그림 7. Phase 1의 걸림 구조(단면 개념도). ③에서 + 끝이 "저절로" 들리는 것이 단순화 지점 — SO-101 그리퍼 끝은 앞면이 아래로 갈수록 뒤로 물러나는 모양이라 셀 끝면 윗 테두리에만 닿아 들어 올릴 수 없었다.</figcaption></figure>
+<h4>설계 버전별 성공률 (TV 리모컨)</h4>
+<table>
+  <tr><th>버전</th><th>주요 변경</th><th class="n">결과</th><th>관찰</th></tr>
+  <tr><td>v1</td><td>걸림 턱 없음, 뒤집어 빼기</td><td class="n">5/10</td><td>턱이 없어 태스크가 너무 쉽고(뒤집기만), 그마저 뒤집기에서 실패</td></tr>
+  <tr><td>v2</td><td>턱 3 mm, 스프링 400 N/m, 해제(밀기) 스킬 추가</td><td class="n">9/10</td><td>대조실험에서 턱이 약해 해제 없이도 셀이 빠짐</td></tr>
+  <tr><td>v3</td><td>스프링 1000 N/m</td><td class="n">0/10</td><td>눌러도 해제가 안 되고, 풀린 셀도 떨어지지 않음</td></tr>
+  <tr><td>v2b</td><td>400 N/m, 턱 마찰 0.05, 칸막이 전체 길이</td><td class="n">4/5</td><td></td></tr>
+  <tr><td>v4</td><td>턱 4.5 mm, 행정 6.8 mm</td><td class="n">10/10</td><td>중간 발표 수치</td></tr>
+  <tr><td>재측정</td><td>다기기 리팩터링 후(11/6)</td><td class="n"><b>7/10</b></td><td>실패 seed 1, 6, 9 모두 뒤집기 단계. 10/10을 낸 코드는 남아 있지 않음</td></tr>
+</table>
+<div class="note"><b>중간 발표 수치의 정정.</b> 중간 발표의 "TV 10/10, 해제 생략 0/5"는 다기기 리팩터링 이전 코드의 결과이며 재현되지 않았다.
+같은 TV seed 0–9를 재측정하면 7/10, 해제 생략은 0/10이지만 셀 20개 중 6개가 수거함에 들어갔다(cell0 1, cell1 5). 또 잡는 위치를 1 mm 안팎 바꾸면
+성공률이 크게 변했다: grasp_x −29.0 mm 8/10, −30.0 mm 9/10, −30.7 mm(당시 코드) 7/10, −31.5 mm 0/10(셀은 18/20 들어갔지만 본체 투입 실패).
+즉 Phase 1의 성공률은 상수에 강하게 의존하는 아슬아슬한 값이었다. 이것이 Phase 2에서 측정값 피드백과 재시도를 넣은 동기다.</div>
+<h4>Phase 1 실패 원인과 조치</h4>
+<table>
+  <tr><th style="width:4%"></th><th style="width:30%">증상</th><th>원인</th><th style="width:30%">조치</th></tr>
+  <tr><td><span class="tag E">환경</span></td><td>떨어진 셀이 수거함 바닥 아래로 사라짐</td><td>낙하 속도가 2 ms당 4 mm, 바닥 두께 4 mm → 터널링</td><td>바닥 12 mm</td></tr>
+  <tr><td><span class="tag EP">환경+정책</span></td><td>뒤집을 자세가 없음</td><td>수거함 위치 (0.06, 0.24)가 5관절 팔의 뒤집기 도달 범위 밖</td><td>도달 가능 자세 분포를 분석해 (0.12, 0.33)으로 이동</td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>턱이 있어도 셀이 빠짐</td><td>셀이 옆으로 4 mm 밀려 턱 밖으로 나감</td><td>옆 틈 0.25 mm, 칸막이</td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>커버를 밀 때 리모컨이 들림</td><td>바닥 충돌 박스를 여러 조각으로 나눈 이음매</td><td>AA는 한 장 유지</td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>그리퍼가 홈에 안 들어감</td><td>충돌 메시가 간이 박스보다 큼</td><td>홈 15.6 × 34 mm로 확대</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>끌기 실패</td><td>베이스 근처에서 팔이 막힘</td><td>뒤에서 밀기 대신 윗면 마찰로 끌기</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>파지력 42.6 N(기준 초과)</td><td>서보 최대 토크로 조임</td><td>힘 제한 파지</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>뒤집는 중 리모컨이 빠짐, 이동 중 셀이 먼저 빠짐</td><td>무게중심에서 먼 파지, 빠른 회전, 경로 중 기울어짐, 팔 충돌</td><td>잡는 위치 조정, 회전 감속, 경로 사전 검증, 충돌 검사</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>+ 끝을 들어 올릴 수 없음</td><td>SO-101 그리퍼 끝 모양</td><td>환경 단순화(저절로 들림) — Phase 2에서 공구로 해결</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>셀이 수거함을 벗어남(Phase 1 미해결)</td><td>뒤집을 때 건전지 칸이 수거함 중심에서 24 mm 어긋남. 단, 성공 seed도 같은 계획이라 단독 원인은 아님</td><td>Phase 2: 착지점 조준, 수거함 쪽 확장, 5° roll</td></tr>
+</table>
+<div class="row">
+  <figure><img src="assets/p1_fail_stb.jpg"><figcaption>STB seed 1: 얇은 본체에서 파지 미끄러짐</figcaption></figure>
+  <figure><img src="assets/p1_fail_light.jpg"><figcaption>조명 seed 3: AAA 끝면이 작아 5.3 mm까지 못 밂</figcaption></figure>
+  <figure><img src="assets/p1_fail_ac.jpg"><figcaption>에어컨 seed 2: 잡은 뒤 처짐, 뒤집기 자세 없음</figcaption></figure>
+</div>
+<figcaption style="margin-bottom:8pt">그림 8. Phase 1 다른 기기 실패(0/6). 그리퍼 끝으로 미는 방식이 AAA와 얇은 기기에 맞지 않았다 → Phase 2에서 공구와 양팔로 전환.</figcaption>
+
+<h3>5.2 Phase 2 (양팔 + 공구, 최종)</h3>
+<h4>평가 이력 (전후 성공률)</h4>
+<div>
+  <div class='bar'><div class='lab'>P1 v1 (턱 없음, TV)</div><div class='trk'><div class='fil' style='width:50.0%'></div></div><div class='val'>5/10</div></div>
+<div class='bar'><div class='lab'>P1 v2 (턱 3 mm)</div><div class='trk'><div class='fil' style='width:90.0%'></div></div><div class='val'>9/10</div></div>
+<div class='bar'><div class='lab'>P1 v3 (스프링 1000)</div><div class='trk'><div class='fil' style='width:0.0%'></div></div><div class='val'>0/10</div></div>
+<div class='bar'><div class='lab'>P1 v4 (턱 4.5 mm) = 중간 발표</div><div class='trk'><div class='fil' style='width:100.0%'></div></div><div class='val'>10/10</div></div>
+<div class='bar'><div class='lab'>P1 재측정 (TV)</div><div class='trk'><div class='fil' style='width:70.0%'></div></div><div class='val'>7/10</div></div>
+<div class='bar'><div class='lab'>P1 다른 기기 3종</div><div class='trk'><div class='fil' style='width:0.0%'></div></div><div class='val'>0/6</div></div>
+<div class='bar'><div class='lab'>P2 eval7 (4기기 × 3)</div><div class='trk'><div class='fil p2' style='width:83.3%'></div></div><div class='val'>10/12</div></div>
+<div class='bar'><div class='lab'>P2 eval10 (4기기 × 10)</div><div class='trk'><div class='fil p2' style='width:100.0%'></div></div><div class='val'>40/40</div></div>
+<div class='bar'><div class='lab'>P2 eval11</div><div class='trk'><div class='fil p2' style='width:97.5%'></div></div><div class='val'>39/40</div></div>
+<div class='bar'><div class='lab'>P2 eval12 (4기기 × 20)</div><div class='trk'><div class='fil p2' style='width:98.8%'></div></div><div class='val'>79/80</div></div>
+<div class='bar'><div class='lab'>P2 eval13</div><div class='trk'><div class='fil p2' style='width:98.8%'></div></div><div class='val'>79/80</div></div>
+<div class='bar'><div class='lab'>P2 eval14</div><div class='trk'><div class='fil p2' style='width:97.5%'></div></div><div class='val'>78/80</div></div>
+<div class='bar'><div class='lab'>P2 eval15 (AAA 치수 변경)</div><div class='trk'><div class='fil p2' style='width:91.2%'></div></div><div class='val'>73/80</div></div>
+<div class='bar'><div class='lab'>P2 eval18 (중단)</div><div class='trk'><div class='fil p2' style='width:78.1%'></div></div><div class='val'>25/32</div></div>
+<div class='bar'><div class='lab'>P2 eval19 (중단)</div><div class='trk'><div class='fil p2' style='width:91.9%'></div></div><div class='val'>68/74</div></div>
+<div class='bar'><div class='lab'>P2 eval20</div><div class='trk'><div class='fil p2' style='width:100.0%'></div></div><div class='val'>80/80</div></div>
+<div class='bar'><div class='lab'>P2 eval20 코드, seed 20–39</div><div class='trk'><div class='fil p2' style='width:98.8%'></div></div><div class='val'>79/80</div></div>
+</div>
+<p class="small">eval16–19는 회귀를 발견하고 중간에 멈춘 평가(분모 = 그때까지 끝난 에피소드). 모든 수치는 <code>code/dev_tools/_out/evalN/</code> 로그(저장소에는 최종 결과만 <code>code/renders/</code>에 보관)와 <code>PROGRESS.md</code> 작업 로그에 근거.</p>
+
+<h4>개발 초기: 양팔·공구·실제형 칸을 만들며 해결한 문제</h4>
+<table>
+  <tr><th style="width:4%"></th><th style="width:30%">증상</th><th>원인</th><th style="width:30%">조치</th></tr>
+  <tr><td><span class="tag E">환경</span></td><td>공구가 셀 속으로 수 mm 파고듦</td><td>가벼운 물체에 MuJoCo 기본(연성) 접촉</td><td>경량 부품 solref 0.005</td></tr>
+  <tr><td><span class="tag EP">환경+정책</span></td><td>거치대에서 공구를 넘어뜨리거나 비뚤게 잡음</td><td>높은 접근, 긴 공구</td><td>낮은 옆 접근, 포크형 거치대, 짧은 공구, 손잡이 폭 방향 파지</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>공구 팁 자세 도달 불가</td><td>wrist_flex ±95° 한계</td><td>10° 기울여 잡기, 들어 올릴 때 점진적 기울임</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>팁 오차 수 mm</td><td>서보 처짐, 손 안 공구 자세</td><td>실측 팁 폐루프 보정, 공구 손 안 보정</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>기울인 블레이드가 셀 윗모서리를 밀어 립에 끼임</td><td>밀 때 접촉점이 높음</td><td>밀기 전 블레이드 수직</td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>발이 두 셀 사이 V홈을 쐐기처럼 밀어 14 N 옆힘</td><td>좁은 notch</td><td>넓은 notch + T자 팁</td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>넓은 notch로 셀이 빠져나옴</td><td>립 사이가 넓음</td><td>좁은 립(틈 9.6 mm &lt; 셀 지름)</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>커버가 손가락에 끼어 기기 위로 떨어짐</td><td>커버를 민 뒤 그냥 놓음</td><td>펜스 너머에 버리기(<code>drop_cover</code>)</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>두 팔 손목·카메라 마운트 충돌</td><td>작업 공간 겹침</td><td>L은 손잡이 폭 방향 파지, R은 20° 기울여 잡기, L이 먼저 물러난 뒤 R 재파지</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>뒤집기 중 셀이 수거함 밖 / 자세 없음</td><td>5자유도 자세 제약</td><td>샘플링 기반 계획, 5° roll, 착지점 조준, 수거함 확장(eval7 10/12)</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>파지력 40 N 초과</td><td>서보가 목표까지 계속 조임</td><td>서보 힘 제한 18–30 N(eval10 40/40)</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>운반 중 느슨한 셀이 앞으로 미끄러져 다시 고정됨</td><td>운반 자세의 기울기</td><td>운반 자세 제약(앞쪽 기울기 ≤ 20°)</td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>TV: 기울어진 셀이 블레이드와 스프링판 사이에서 압축돼 튀어오름</td><td>스프링 400 N/m 과다</td><td>기기별 스프링(TV 300 N/m)</td></tr>
+  <tr><td><span class="tag EP">환경+정책</span></td><td>AAA 셀이 스프링 에너지로 튕겨 나감</td><td>가벼운 셀 + 강한 스프링</td><td>AAA 150 N/m(예압 0.6 N 유지), AAA는 립 끝 + 1.1 mm만 밀기</td></tr>
+</table>
+
+<h4>최종 단계(80회 평가 반복)에서 분석한 실패 — 대표 사례</h4>
+<table>
+  <tr><th style="width:4%"></th><th style="width:15%">케이스</th><th>관찰 → 원인</th><th style="width:27%">개선 → 결과</th></tr>
+  <tr><td><span class="tag P">정책</span></td><td>light seed 0 (eval15)</td><td>공구가 리모컨을 들어 올리고 리모컨이 12° 회전. 접촉 분석 결과 주 팔의 고정 조가 기기 <b>옆면이 아닌 윗모서리</b>에 올라앉아 있었고,
+  힘 제한기가 누르는 힘을 쥐는 힘으로 오인해 조를 끝까지 열었다 → 기기는 "누르기"로만 고정됨 → 공구를 notch 안에서 세울 때 블레이드 모서리가 notch 벽을 쓸어 기기가 빠짐</td>
+  <td>움직이는 조 접촉력(<code>jaw_force</code>)으로 파지 실패 감지, notch 위에서 먼저 세우기(⑰ 참조) → 해결</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>light seed 13</td><td>들어 올리는 중 공구가 갑자기 3 mm 옆으로 튀고 셀 두 개가 칸 안으로 튕김. 셀 곡면이 발을 옆으로 밀고(15 N) 옆 오차 <b>적분 보정이 와인드업</b> → 셀이 풀리는 순간 공구가 튐</td>
+  <td>적분 감쇠(0.9) + ±2 mm 상한 → 해결</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>TV/STB seed 0, 6 (eval16, 회귀)</td><td>재파지 3회 모두 실패해 그리퍼가 열린 채 고정 실패. 이 자세들에서는 SO-101(5자유도)이 "20° 기울기 + 조 방향"을 <b>정확히 도달할 수 없어</b> IK 오차 4–9 mm가 위치 오차로 나타남. 2.5 mm씩 바깥으로 옮기는 재시도로는 해결 불가</td>
+  <td>원인 확인 후 다른 방법 시도(아래 두 행)</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>AC seed 0 (eval17, 회귀)</td><td>도달 가능한 기울기(0°)로 잡게 했더니 L 팔 추종 오차 20 mm: <b>R 손목이 L 팔 경로에 들어와 두 팔이 충돌</b> → 20° 기울기가 필요했던 이유를 재확인</td>
+  <td>20° 이상만 허용</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>TV/STB/light seed 0, 6, 9 등</td><td>같은 현상(고정 조가 윗모서리에)</td><td><b>IK 목표 사전 보정</b>: IK 해의 고정 조 위치가 원하는 위치가 될 때까지 목표를 옮김(남는 오차는 방향으로 1–4°) + 관절공간 이동, 20° 유지 → 20개 시험 중 19개 정상 옆면 파지</td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>AAA 다수 (eval11–18 내내 남던 실패의 <b>근본 원인</b>)</td><td>들어 올릴 때 두 셀 높이 불균형, 공구가 옆으로 밀림, 셀이 튀거나 걸림. AAA 셀 간격 19 mm에서는 셀 최저선이 |y| = 9.5 mm인데 공구 발은 ±8 mm → 발이 셀의 <b>안쪽 곡면</b>을 밀어 올려 큰 옆힘(쐐기, 15 N)과 불균형. AA는 최저선 8 mm = 발 끝이라 거의 수직으로 들어 안정적이었음</td>
+  <td>AAA 셀 간격 16 mm(AA와 같은 기하) → light 1/3/7/13/16 1회 시도에 균형 있게 성공(eval19 STB 20/20)</td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>light seed 0, 3 (eval19)</td><td>거의 다 들었을 때 한 셀이 뒤로 튕겨 기기 밖으로 떨어짐. 접촉점이 y = 7.9–8.0 mm에만 있었음: 셀 중심선(8 mm)이 블레이드 가장자리(±8 mm)와 같아 블레이드가 + 끝면의 <b>절반만</b> 막음 → 스프링이 미는 셀이 블레이드 모서리를 돌아 빠짐</td>
+  <td>AAA 셀 간격 <b>14 mm</b>(중심선이 블레이드 안쪽 1 mm). 보유력 시험 통과 → light 0/1/3/5 모두 1회 성공</td></tr>
+  <tr><td><span class="tag P">정책</span></td><td>AC seed 0, 10, 11, TV seed 7 (eval19)</td><td>공구 발이 notch가 아니라 립·셀 위에 내려앉음, L 팔 "막힘". light seed 0의 대책(notch 위에서 먼저 세우기)이 두꺼운 기기(AC 26 mm, TV 22 mm)에서는 그 높이의 수직 자세가 wrist_flex 한계로 <b>도달 불가</b>(IK 오차 6–16 mm)</td>
+  <td>수직 자세가 도달 가능할 때만 위에서 세우고 아니면 기울인 채 하강 → 네 seed 모두 1회 성공 → <b>eval20 80/80</b></td></tr>
+  <tr><td><span class="tag E">환경</span></td><td>AC seed 20 (추가 검증 seed, eval20 코드 기준 79/80의 유일한 실패)</td><td>들어 올리는 중 셀 1이 갑자기 스프링 쪽으로 19 mm 이동하며 +44°로 뒤집힘(그림 9). 에어컨 셀은 거의 수평으로 통째로 들려 − 끝도 약 6–9 mm 올라가고(성공한 AC 실행에서도 − 끝 중심이 접점판 윗면 근처까지 감),
+  − 끝 접촉이 접점판 위쪽 모서리로 올라가면 블레이드(낮은 + 끝)와 접점판(높은 − 끝)의 압축력 짝힘이 − 끝을 위로 돌림 → − 끝이 접점판을 넘으면 블레이드가 셀을 앞으로 밀어 뒤집힘. 압축력 = 스프링 400 N/m × (예압 + 6.6 mm) ≈ 3 N</td>
+  <td>에어컨 스프링 <b>300 N/m</b>(TV와 같은 값, 짝힘 25% 감소). 보유력 시험 통과 → AC seed 0–39 재평가(4.2–4.3)</td></tr>
+</table>
+<div class="row">
+  <figure><img src="assets/jump_a.jpg"><figcaption>(a) t = 30.92 s: 두 셀이 거의 수평으로 들림. 스프링(오른쪽 아래) 위로 − 끝이 올라와 있음</figcaption></figure>
+  <figure><img src="assets/jump_b.jpg"><figcaption>(b) t = 30.98 s: 셀 1의 − 끝이 접점판을 넘어 위로 돌며 튕김</figcaption></figure>
+</div>
+<figcaption style="margin-bottom:8pt">그림 9. AC seed 20 실패의 순간(본체 반투명, 20 ms 간격 재현 렌더링). 원인 분석에 쓴 장면.</figcaption>
+<div class="note"><b>교훈.</b> (1) 한 증상만 보고 고친 치수가 다른 실패를 만들었다: AAA + 끝이 홈에 빠지는 문제를 고치려 넓힌 셀 간격(19 mm)이 이후 불균형의 원인이었다.
+(2) 한 기기에서 효과가 있던 대책(위에서 세우기)이 다른 기기에서는 도달 불가였다. (3) 그래서 고칠 때마다 80회 전체를 다시 돌렸고, 회귀(eval16·17)를 바로 발견해 되돌렸다.
+(4) 성공률보다 <b>원인 메커니즘</b>(접촉점·힘·IK 오차)을 측정해 고치는 것이 효과적이었다.</div>
+
+<!-- ===================================================================== 6 -->
+<h2>6. Discussion</h2>
+<h3>6.1 잘 동작한 부분</h3>
+<ul>
+  <li>실제 리모컨과 같은 고정 구조(립 + 스프링)에서 <b>공구를 써서</b> 셀을 빼는 양팔 조작을 4기기 모두에서 구현했고, 대조실험으로 "밀기만/뒤집기만으로는 안 된다"를 정량 확인했다(0/40 셀).</li>
+  <li>측정값 기반 폐루프(공구 팁 보정, 셀 위치·높이·기울기 피드백, 파지 실패 감지, 힘 제한, 재시도) 덕분에 서보 처짐·공구 미끄러짐·5자유도 IK 오차에 강건했다.
+  최종 평가에서 pry는 거의 모두 첫 시도에 성공했다.</li>
+  <li>제너레이터 기반 동시 실행으로 두 팔이 실제로 병렬 작업(커버 열기 ∥ 공구 집기, 뒤집기 ∥ 공구 반납) — 에피소드 약 70 s.</li>
+  <li>최대 접촉력이 판정 기준 40 N보다 충분히 낮다(4.2).</li>
+  <li>개발에 쓰지 않은 seed에서도 같은 성능(4.3) — 특정 seed에 맞춘 정책이 아님.</li>
+</ul>
+<h3>6.2 한계</h3>
+<ul>
+  <li><b>인지</b>: 시뮬레이터 상태값(자세·접촉력)을 그대로 쓴다. 실제 적용에는 손목 카메라 기반 자세 추정과 그리퍼 전류 기반 힘 추정이 필요하다.</li>
+  <li><b>기기 모델 의존</b>: 정책이 기기 치수(배터리 칸 위치, 셀 종류)를 안다. 처음 보는 기기에는 치수 정보가 필요하다.</li>
+  <li><b>민감한 접촉</b>: 가벼운 AAA 셀과 좁은 공차 때문에 접촉이 혼돈적이다. 같은 설정에서도 시뮬레이터의 미세한 차이(예: 잡는 각도의 1e-4 rad보다 작은 차이)로 결과가 달라지는 사례(AC seed 20)를 확인했다.</li>
+  <li><b>모델 단순화</b>: 스프링은 slide joint, 래치는 weld + 힘 조건, 셀은 강체 원통. 셀·기기 치수는 실제 제품 실측이 아니라 대표값이다.
+  환경 파라미터(셀 간격, 스프링 강도) 일부는 정책이 잘 되도록 조정한 것이며, 모두 실제 리모컨에 있을 법한 범위(AA/AAA 셀 간격, 0.3–0.4 N/mm급 스프링) 안에서 정했다.</li>
+  <li><b>5자유도 팔</b>: 위치 + 접근 방향 + 조 방향을 동시에 만족할 수 없는 배치가 있어 파지·공구 자세·뒤집기 계획이 복잡해졌다.</li>
+  <li><b>공구 반납</b>은 가끔 포크에 완전히 들어가지 않는다(성공 기준 밖, 4.2 참고 지표).</li>
+  <li>장면은 실제 현장 사진을 참고하지 않았고, 18650 리튬 셀 기기(중간 발표 계획)는 구현하지 않았다.</li>
+</ul>
+<h3>6.3 개선 방향</h3>
+<ul>
+  <li>손목 카메라 기반 기기·셀 자세 추정과 그리퍼 전류 기반 힘 추정으로 상태값 대체.</li>
+  <li>셀을 하나씩 들어 올리는 단일 셀 pry(균형 문제 제거), 들기 중 − 끝 높이 감시.</li>
+  <li>6자유도 팔 또는 회전 지그로 자세 제약 완화.</li>
+  <li>기기 확장: 18650 손전등·휴대용 선풍기, 나사 고정 커버(드라이버 공구 사용).</li>
+  <li>스크립트 정책을 시연 생성기로 써서 비전 입력 정책을 모방학습으로 증류.</li>
+</ul>
+
+<!-- ===================================================================== appendix -->
+<h2>부록</h2>
+<h3>A. 재현 방법</h3>
+<pre>cd code
+uv venv .venv --python 3.12
+uv pip install --python .venv/bin/python -r requirements.txt   # Windows: .venv\Scripts\python.exe
+python run_episode.py --seeds 0 --device tv_remote                          # 1회, 자세한 로그
+python run_episode.py --seeds 0-19 --device light_remote -q --out r.json   # 평가
+python ablation.py --mode no_tool --seeds 0-4                               # 대조실험
+python live_demo.py --device tv_remote --seed 5                             # 대화형 뷰어 데모
+MUJOCO_GL=osmesa python render_rollout_stages.py --device tv_remote --seed 5   # 그림</pre>
+<p class="small">venv는 영문 경로에 둔다. 헤드리스 리눅스 렌더링은 <code>MUJOCO_GL=osmesa</code>. 실행 환경: Python 3.12, mujoco 3.17.0, so101-nexus 0.10.0 (Phase 1: Windows 11, Phase 2: Linux 클라우드 컨테이너). GPU 불필요.</p>
+<h3>B. 파일 구성</h3>
+<table>
+  <tr><th style="width:36%">경로</th><th>내용</th></tr>
+  <tr><td><code>code/battery_sim/scene.py</code></td><td>장면 MJCF 생성(방, 작업대, 지그, 수거함, 장식, 조명, 카메라, 두 번째 팔, 공구, 거치대)</td></tr>
+  <tr><td><code>code/battery_sim/devices.py</code></td><td>리모컨 4종(커버, 래치, 스프링, 립, notch, 셀)</td></tr>
+  <tr><td><code>code/battery_sim/env.py</code>, <code>ik.py</code>, <code>success.py</code></td><td>양팔 환경·무작위화·래치 로직·접촉력 모니터, DLS IK, 성공 판정</td></tr>
+  <tr><td><code>code/battery_sim/policy.py</code></td><td>스킬 + 상태 머신(정책 전체)</td></tr>
+  <tr><td><code>code/run_episode.py</code>, <code>ablation.py</code>, <code>live_demo.py</code></td><td>평가, 대조실험, 데모</td></tr>
+  <tr><td><code>code/renders/eval_bimanual_*.json</code>, <code>renders/heldout/</code>, <code>renders/ablation_*.json</code></td><td>최종 평가 결과(에피소드별)</td></tr>
+  <tr><td><code>code/dev_tools/</code></td><td>디버깅 도구(스냅샷, 단계별 추적, 접촉 목록, 보유력 시험)</td></tr>
+  <tr><td><code>code/legacy_midterm/</code>, <code>records/phase1_single_arm/</code></td><td>Phase 1 스크립트와 실험 기록(데이터, 그림, 인수인계 문서)</td></tr>
+  <tr><td><code>code/PROMPTS_phase1.md</code>, <code>PROMPTS_phase2.md</code></td><td>LLM 프롬프트 원문 기록</td></tr>
+  <tr><td><code>PROGRESS.md</code>, <code>REPORT_MATERIAL.md</code></td><td>Phase 2 작업 로그, 설계·실패 분석 정리</td></tr>
+</table>
+<h3>C. 에셋 출처</h3>
+<ul>
+  <li>SO-101 로봇 모델: MuJoCo Menagerie(Apache-2.0), SO101-Nexus 0.10.0에 포함된 것을 그대로 사용.</li>
+  <li>장식 메시: Google Scanned Objects(CC BY 4.0) — 테이프 2종, C-클램프. YCB Object and Model Set(ycbbenchmarks.com) — 드라이버, 가위, 마커.
+  YCB는 재배포본(예: Habitat YCB)에 CC BY 4.0으로 표기되어 있으며, 원 배포처의 라이선스 문구는 직접 확인하지 못했다. 모두 SO101-Nexus가 첫 실행 때 내려받는다.</li>
+  <li>나머지(방, 작업대, 지그, 상자, 리모컨, 공구, 텍스처)는 코드로 직접 생성.</li>
+</ul>
+
+</body>
+</html>

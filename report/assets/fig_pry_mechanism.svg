@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 560" font-family="Noto Sans CJK KR, NanumGothic, sans-serif">
+  <style>
+    .t { font-size: 30px; font-weight: 700; fill: #1d1d1f; }
+    .s { font-size: 19px; fill: #555; }
+    .l { font-size: 18px; fill: #c0392b; }
+    .k { font-size: 17px; fill: #333; }
+    .wall { fill: #7b8189; }
+    .cell { fill: #2b2b2e; }
+    .cap { fill: #d4962a; }
+    .lip { fill: #9fb4c8; }
+    .tool { fill: #c9ccd1; stroke: #6d7178; stroke-width: 2; }
+    .handle { fill: #e07a2f; }
+    .spring { fill: none; stroke: #555; stroke-width: 3; }
+    .arrow { stroke: #c0392b; stroke-width: 4; fill: none; marker-end: url(#ah); }
+  </style>
+  <defs>
+    <marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+    <!-- one compartment: x0..x0+440, floor y=400 -->
+    <g id="box">
+      <rect class="wall" x="0" y="400" width="440" height="40"/>
+      <rect class="wall" x="0" y="250" width="40" height="190"/>
+      <rect class="wall" x="420" y="250" width="20" height="190"/>
+      <!-- pry notch (recessed floor behind the + end) -->
+      <rect x="40" y="400" width="60" height="14" fill="#ffffff"/>
+    </g>
+    <g id="springL">
+      <polyline class="spring" points="395,300 405,315 385,330 405,345 385,360 405,375 395,390"/>
+    </g>
+  </defs>
+
+  <!-- ① locked -->
+  <text class="t" x="20" y="42">① 잠김 (실제 리모컨 구조)</text>
+  <text class="s" x="20" y="72">+ 끝이 고정 립 아래, − 끝은 스프링이 밂</text>
+  <g transform="translate(20,0)">
+    <use href="#box"/>
+    <rect class="lip" x="40" y="292" width="58" height="14"/>
+    <rect class="cell" x="100" y="312" width="210" height="86"/>
+    <rect class="cap" x="310" y="312" width="58" height="86"/>
+    <rect x="368" y="300" width="10" height="100" fill="#9aa3ad"/>
+    <use href="#springL"/>
+    <text class="k" x="30" y="282">립 4.5 mm</text>
+    <text class="k" x="250" y="290">스프링 0.6 N 예압</text>
+    <text class="l" x="20" y="472">뒤집어도·흔들어도 립에 걸림</text>
+    <text class="l" x="20" y="498">밀기만 하면 스프링이 다시 립 밑으로</text>
+  </g>
+
+  <!-- ② push past the lip -->
+  <text class="t" x="520" y="42">② 공구로 스프링 쪽으로 밀기</text>
+  <text class="s" x="520" y="72">얇은 T자 팁을 notch에 넣고 + 끝면을 밂</text>
+  <g transform="translate(520,0)">
+    <use href="#box"/>
+    <rect class="lip" x="40" y="292" width="58" height="14"/>
+    <rect class="cell" x="130" y="312" width="210" height="86"/>
+    <rect class="cap" x="340" y="312" width="45" height="86"/>
+    <rect x="385" y="300" width="10" height="100" fill="#9aa3ad"/>
+    <polyline class="spring" points="402,300 410,315 398,330 410,345 398,360 410,375 402,390"/>
+    <!-- tool: thin blade + foot -->
+    <rect class="tool" x="118" y="190" width="9" height="212"/>
+    <rect class="tool" x="118" y="398" width="34" height="8"/>
+    <rect class="handle" x="104" y="120" width="38" height="70" rx="6"/>
+    <path class="arrow" d="M150,230 L230,230"/>
+    <text class="k" x="150" y="196">+6 mm (AA) · 립 끝+1.1 mm (AAA)</text>
+    <text class="l" x="20" y="472">+ 끝이 립 끝을 지남 (블레이드 뒷면도 통과)</text>
+    <text class="l" x="20" y="498">밀린 셀은 아직 갇혀 있음</text>
+  </g>
+
+  <!-- ③ lever up -->
+  <text class="t" x="1020" y="42">③ 지렛대로 + 끝 들기</text>
+  <text class="s" x="1020" y="72">발로 + 끝 밑을 받쳐 1.5 mm씩 들어 올림</text>
+  <g transform="translate(1020,0)">
+    <use href="#box"/>
+    <rect class="lip" x="40" y="292" width="58" height="14"/>
+    <g transform="rotate(12 380 300)">
+      <rect class="cell" x="130" y="312" width="210" height="86"/>
+      <rect class="cap" x="340" y="312" width="40" height="86"/>
+    </g>
+    <rect x="385" y="300" width="10" height="100" fill="#9aa3ad"/>
+    <polyline class="spring" points="402,300 410,315 398,330 410,345 398,360 410,375 402,390"/>
+    <g transform="rotate(10 124 300)">
+      <rect class="tool" x="118" y="150" width="9" height="200"/>
+      <rect class="tool" x="118" y="346" width="34" height="8"/>
+      <rect class="handle" x="104" y="80" width="38" height="70" rx="6"/>
+    </g>
+    <path class="arrow" d="M175,300 L175,225"/>
+    <text class="k" x="195" y="222">+ 끝 바닥 &gt; 립 윗면 + 1.5 mm</text>
+    <text class="l" x="20" y="472">두 + 끝 높이·위치를 실측하며 균형 유지</text>
+    <text class="l" x="20" y="498">기기가 들리면 내려서 더 밀고 재시도</text>
+  </g>
+
+  <!-- ④ set on the lip -->
+  <text class="t" x="1520" y="42">④ 립 위에 얹힘 → 뒤집으면 빠짐</text>
+  <text class="s" x="1520" y="72">공구를 뒤로 → 스프링이 셀을 립 위로 밀어 올려 놓음</text>
+  <g transform="translate(1520,0)">
+    <use href="#box"/>
+    <rect class="lip" x="40" y="292" width="58" height="14"/>
+    <g transform="translate(-50 0) rotate(23 368 398)">
+      <rect class="cell" x="100" y="312" width="210" height="86"/>
+      <rect class="cap" x="310" y="312" width="58" height="86"/>
+    </g>
+    <rect x="368" y="300" width="10" height="100" fill="#9aa3ad"/>
+    <use href="#springL"/>
+    <path class="arrow" d="M330,190 L240,190"/>
+    <text class="k" x="250" y="170">스프링 복원</text>
+    <text class="l" x="20" y="472">+ 끝이 립 윗면에 걸쳐 있음 = "free"</text>
+    <text class="l" x="20" y="498">주 팔이 수거함 위에서 뒤집고 흔듦</text>
+  </g>
+  <text class="s" x="20" y="545" font-size="16">측면 단면 개념도(치수 비례 아님). 왼쪽이 + 단자 쪽(고정 립, pry notch), 오른쪽이 − 단자(코일 스프링 + 키 큰 접점판).</text>
+</svg>
