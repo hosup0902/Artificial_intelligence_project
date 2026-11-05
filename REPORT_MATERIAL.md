@@ -311,6 +311,10 @@ python render_scene.py ; python render_devices.py                 # 그림
 * 작업장 전체(`overview`/`wide`), 작업대 정면(`hero`), 기기 4종 닫힘/열림(`render_devices.py`),
   배터리 칸 단면 개념도(립·스프링·notch·공구 팁 — 직접 그리거나 `slotcam`/`closeup` 렌더), 공구 형상,
   pry 단계별 근접 장면(`slotcam`: 삽입 → 밀기 → 들기 → 립 위에 얹힘), 뒤집기(`bincam`), 상자 투입(`overview`).
+* **최종 정책 롤아웃 그림(이미 생성됨)**: `code/renders/final/` — TV seed 5, 조명(AAA) seed 15의 단계별 장면(시작, 펜스, 공구 집기,
+  커버 열기, 고정, pry 삽입/밀기/들기/립 위 안착(closeup·slotcam·side), 재파지, 뒤집기, 상자 투입)과 한 장 요약
+  `tv_remote_s5_sheet.png`, `light_remote_s15_sheet.png`. 재생성: `MUJOCO_GL=osmesa python render_rollout_stages.py --device <dev> --seed <n>`.
+  pry 장면은 `*_pry_lifted_closeup.png`, `*_pry_lifted_side.png`가 가장 잘 보임. 기기 4종: `code/renders/devices_lineup.png`(최종 치수로 재생성됨).
 * 주의: `code/renders/`의 `1_start_*.png` 등은 **중간발표(팔 1대) 때 그림**. 최종 그림은 `render_scene.py` 재실행으로 다시 만들 것
   (양팔·공구 거치대가 보이는지 확인). 단계별 장면은 `run_episode.py --video --cam <cam>` 영상에서 프레임을 뽑거나
   `live_demo.py`에서 일시정지 후 캡처.
