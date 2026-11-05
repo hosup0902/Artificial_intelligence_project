@@ -405,13 +405,38 @@ class SkillPolicy:
                 axes = {2: ap, 0: y if y[1] < 0 else -y}
             else:
                 axes = {2: ap, 0: -y}
+                # the SO-101 is 5-DoF: in some device poses the 20 deg lean + jaw direction is not reachable and
+                # the IK error (up to 9 mm) lands the fixed jaw on the top edge. Pick the lean (preferring the
+                # nominal one, then larger leans = wrist further from the tool arm) with an exact solution.
+                bottom = np.array([c[0], c[1], top - self.grasp_depth])
+                best = None
+                for ln in (lean, lean + np.radians(10), lean - np.radians(10), lean + np.radians(20),
+                           lean - np.radians(20)):
+                    ax_ = {2: R @ np.array([np.sin(ln), 0.0, -np.cos(ln)]), 0: -y}
+                    e_ = A.solve_best(bottom, ax_, self.grasp_off)[1]
+                    if best is None or e_ < best[0] - 1e-4:
+                        best = (e_, ln, ax_)
+                    if e_ < 0.0015:
+                        break
+                if abs(best[1] - lean) > 1e-6:
+                    self.say(f"[R] hold grasp: lean {np.degrees(lean):.0f} deg not reachable here -> "
+                             f"{np.degrees(best[1]):.0f} deg (ik {1000*best[0]:.1f} mm)")
+                axes = best[2]
+                # 1 mm clearance between the fixed jaw and the side wall (the moving jaw closes the gap)
+                c = c + 0.001 * np.asarray(axes[0], float)
             self._grasp_axes = axes
             yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
             for k in range(3):
-                yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
+                e_g = yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
+                if self.on_phase is not None:
+                    pa_, Ra_ = A.tcp_actual()
+                    fj_w = pa_ + Ra_ @ np.array([0.02, 0, 0])       # fixed jaw tip (actual)
+                    fj_c = A.tool(np.array([0.02, 0, 0]))[0]        # fixed jaw tip (commanded)
+                    self.say(f"[R] grasp attempt {k}: ik {1000*e_g:.1f} mm, fixed jaw tip dev "
+                             f"{np.round(1000*(R.T @ (fj_w - p)), 1)} (cmd {np.round(1000*(R.T @ (fj_c - p)), 1)}), W/2 {500*self.W:.1f}")
                 yield from A.compliant_close("remote_body", 28.0 if not lift else 33.0)
-                if self.env.jaw_force("R") > 3.0:
-                    break
+                if self.env.jaw_force("R") > 3.0 or k == 2:
+                    break                       # (last attempt: keep the press-down hold it ended in)
                 # missed: the fixed jaw came down on the top edge instead of beside the side wall (the jaw is
                 # placed with zero clearance) -> open, back up and come down again 2.5 mm further out
                 self.say(f"[R] grasp missed (moving jaw {self.env.jaw_force('R'):.1f} N, jaw {self.env.d.qpos[A.io.gq]:.2f} rad)"
