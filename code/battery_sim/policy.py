@@ -93,6 +93,7 @@ class Arm:
         self.ik = IK(self.env.m, self.io.prefix)
         self.qcmd = self.env.q_of(key)
         self.grip_cmd = 0.0
+        self.force_limit = None              # (body, lo N, hi N) while holding something
 
     # -------------------------------------------------------------- helpers
     def tool(self, offset=(0, 0, 0)):
@@ -103,6 +104,15 @@ class Arm:
         return s.xpos.copy(), s.xmat.reshape(3, 3).copy()
 
     def set(self, q, g=None):
+        if self.force_limit is not None and g is not None:
+            # servo torque limit (as configured on the STS3215): keep the squeeze on the held body in [lo, hi]
+            body, lo, hi = self.force_limit
+            f = self.env.grip_force(self.key, body)
+            if f > hi:
+                self.grip_cmd += 0.003
+            elif f < lo:
+                self.grip_cmd -= 0.0015
+            g = self.grip_cmd
         self.env.set_ctrl(q, g, arm=self.key)
 
     def solve_best(self, target, axes=None, offset=(0, 0, 0), vecs=None, seeds=None, iters=300):
@@ -171,6 +181,7 @@ class Arm:
         return err
 
     def grip(self, value, t=0.6):
+        self.force_limit = None
         self.grip_cmd = value
         yield from self.wait(t)
 
@@ -398,6 +409,7 @@ class SkillPolicy:
             yield from A.goto([c[0], c[1], top + 0.05], axes, self.grasp_off, grip=GRIP_OPEN)
             yield from A.move([c[0], c[1], top - self.grasp_depth], axes, self.grasp_off, speed=0.04, settle=0.1)
             yield from A.compliant_close("remote_body", 28.0 if not lift else 33.0)
+            A.force_limit = ("remote_body", 18.0, 30.0)
             self.phase("grasp_closed")
             self._holding = True
             if not lift:
@@ -655,17 +667,17 @@ class SkillPolicy:
         pd, Rd = self.device()
         self.say(f"[R] at flip pose: device up-axis z {Rd[2,2]:.2f}, grasp slip {1000*self.grasp_offset():.0f} mm")
         for _ in range(3):                                     # gentle shake about the flex axis
-            for dd in (+0.10, -0.10):
+            for dd in (+0.08, -0.08):
                 qs = q_flip.copy()
                 qs[3] = np.clip(qs[3] + dd, A.ik.lo[3], A.ik.hi[3])
-                yield from A.goto_q(qs, dur=0.25, settle=0.0)
-        yield from A.goto_q(q_flip, dur=0.25, settle=1.0)
+                yield from A.goto_q(qs, dur=0.35, settle=0.0)
+        yield from A.goto_q(q_flip, dur=0.35, settle=1.0)
         moved = [np.linalg.norm(env.d.body(f"remote_cell{i}").xpos - cells_before[i]) for i in range(2)]
         rep = env.success()
         self.say(f"[R] cells moved {np.round(np.array(moved)*1000,0)} mm, in bin {rep.cells_in_battery_bin}")
         # cells are out: lift the (still inverted) device straight up and away from the bin rim
         q_l, _, _ = A.ik.solve(A.qcmd.copy(), A.tool()[0] + [0, 0, 0.08], {}, iters=200)
-        yield from A.goto_q(q_l, dur=0.8, settle=0.1)
+        yield from A.goto_q(q_l, dur=1.3, settle=0.1)
         return self.stage("flip_over_bin", all(rep.cells_in_battery_bin))
 
     def drop_in_crate(self):
@@ -949,6 +961,7 @@ class SkillPolicy:
             yield from self.tool_retreat()
         entry = np.array([tip_x - 0.045, cy, rest + 0.004])
         yield from A.move(entry, axes, off, speed=0.03, settle=0.1)
+        self.phase("ret_entry")
         bias = np.zeros(3)
         for _ in range(3):                                    # closed loop on the measured tip before sliding in
             err = entry - self.env.d.site("pry_tip").xpos
@@ -957,9 +970,13 @@ class SkillPolicy:
             bias += np.clip(err, -0.008, 0.008)
             yield from A.move(entry + bias, axes, off, speed=0.01, min_time=0.1, settle=0.15)
         yield from A.move([tip_x, cy, rest + 0.004] + bias, axes, off, speed=0.03, settle=0.1)
+        self.phase("ret_slid_in")
         yield from A.move([tip_x, cy, rest] + bias, axes, off, speed=0.01, settle=0.2)
+        self.phase("ret_lowered")
         yield from A.grip(GRIP_OPEN, 0.6)
+        self.phase("ret_released")
         yield from A.move(A.tool()[0] + [0, 0, 0.03], {}, speed=0.05, settle=0.2)
+        self.phase("ret_up")
         pt, _ = self.tool_pose()
         ok = abs(pt[0] - cx) < 0.006 and abs(pt[1] - cy) < 0.006 and pt[2] < TOOL_RACK["plate_z"]
         self.say(f"[L] tool returned to the holder: {ok} (tool at {np.round(pt, 3)})")
