@@ -1,0 +1,50 @@
+{
+ "seed": 5,
+ "device": "tv_remote",
+ "no_unlatch": false,
+ "success": true,
+ "cells_in_bin": [
+  true,
+  true
+ ],
+ "body_in_crate": true,
+ "peak_force": 28.295796878984984,
+ "sim_time": 48.82800000001371,
+ "stages": [
+  [
+   "push_to_fence",
+   5.51,
+   true
+  ],
+  [
+   "slide_cover",
+   12.38,
+   true
+  ],
+  [
+   "reseat_on_fence",
+   12.38,
+   true
+  ],
+  [
+   "unlatch_cells",
+   24.48,
+   true
+  ],
+  [
+   "grasp_device",
+   32.2,
+   true
+  ],
+  [
+   "flip_over_bin",
+   41.23,
+   true
+  ],
+  [
+   "drop_in_crate",
+   47.83,
+   true
+  ]
+ ]
+}

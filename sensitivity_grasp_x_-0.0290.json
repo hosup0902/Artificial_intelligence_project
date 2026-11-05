@@ -1,0 +1,162 @@
+[
+ {
+  "seed": 0,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 26.96,
+  "sim_time": 74.33,
+  "steps": 37164,
+  "failed_stage": null,
+  "wall": 59.4
+ },
+ {
+  "seed": 1,
+  "device": "tv_remote",
+  "success": false,
+  "cells_in_bin": [
+   true,
+   false
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.45,
+  "sim_time": 73.35,
+  "steps": 36674,
+  "failed_stage": "flip_over_bin",
+  "wall": 83.1
+ },
+ {
+  "seed": 2,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.67,
+  "sim_time": 74.12,
+  "steps": 37059,
+  "failed_stage": null,
+  "wall": 94.0
+ },
+ {
+  "seed": 3,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.8,
+  "sim_time": 74.15,
+  "steps": 37074,
+  "failed_stage": null,
+  "wall": 90.0
+ },
+ {
+  "seed": 4,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.23,
+  "sim_time": 53.06,
+  "steps": 26529,
+  "failed_stage": null,
+  "wall": 38.9
+ },
+ {
+  "seed": 5,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.71,
+  "sim_time": 48.83,
+  "steps": 24414,
+  "failed_stage": null,
+  "wall": 37.5
+ },
+ {
+  "seed": 6,
+  "device": "tv_remote",
+  "success": false,
+  "cells_in_bin": [
+   true,
+   false
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.48,
+  "sim_time": 53.19,
+  "steps": 26594,
+  "failed_stage": "flip_over_bin",
+  "wall": 43.2
+ },
+ {
+  "seed": 7,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.73,
+  "sim_time": 53.07,
+  "steps": 26534,
+  "failed_stage": null,
+  "wall": 42.3
+ },
+ {
+  "seed": 8,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.54,
+  "sim_time": 49.39,
+  "steps": 24694,
+  "failed_stage": null,
+  "wall": 40.3
+ },
+ {
+  "seed": 9,
+  "device": "tv_remote",
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.56,
+  "sim_time": 53.32,
+  "steps": 26659,
+  "failed_stage": null,
+  "wall": 41.8
+ }
+]

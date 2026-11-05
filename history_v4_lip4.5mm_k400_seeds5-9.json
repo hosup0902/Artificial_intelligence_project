@@ -1,0 +1,77 @@
+[
+ {
+  "seed": 5,
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 28.28,
+  "sim_time": 48.54,
+  "steps": 24269,
+  "failed_stage": null,
+  "wall": 26.2
+ },
+ {
+  "seed": 6,
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.3,
+  "sim_time": 53.05,
+  "steps": 26524,
+  "failed_stage": null,
+  "wall": 29.1
+ },
+ {
+  "seed": 7,
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.87,
+  "sim_time": 52.74,
+  "steps": 26369,
+  "failed_stage": null,
+  "wall": 28.9
+ },
+ {
+  "seed": 8,
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 27.7,
+  "sim_time": 49.99,
+  "steps": 24994,
+  "failed_stage": null,
+  "wall": 28.4
+ },
+ {
+  "seed": 9,
+  "success": true,
+  "cells_in_bin": [
+   true,
+   true
+  ],
+  "body_in_crate": true,
+  "cell_in_crate": false,
+  "peak_force": 28.03,
+  "sim_time": 52.52,
+  "steps": 26259,
+  "failed_stage": null,
+  "wall": 30.6
+ }
+]
