@@ -37,6 +37,14 @@ def nominal_pose(spec):
     """Spawn pose of a device: battery end 27 mm short of the jig fence (same as the TV remote)."""
     return (FENCE_X - spec.length / 2 - 0.027, 0.005, JIG_TOP + 0.0002)
 BATTERY_BIN = dict(center=(0.12, 0.33, 0.0), size=(0.11, 0.11, 0.085))
+# second SO-101 ("tool arm", joint/body names prefixed "l_") across the jig, facing the main arm
+LEFT_BASE = (0.50, 0.0, 0.0)
+LEFT_YAW = np.pi
+# pry tool rack next to the tool arm; the tool hangs in it with its hooked tip pointing along +RACK_DIR
+# fork-type tool holder: the slot is open toward -x, the tool is lifted 4 mm and slid out along -x
+TOOL_RACK = dict(center=(0.32, -0.14), plate_z=0.046)
+TOOL_LEN = dict(tip_to_collar=0.033, handle=0.055)
+TOOL_FOOT_ANGLE = np.radians(10.0)
 BODY_CRATE = dict(center=(0.075, -0.27, 0.0), size=(0.18, 0.24, 0.075))
 CACHE = Path.home() / ".cache" / "so101_nexus"
 
@@ -172,6 +180,10 @@ PLAIN = {
     "plastic_clock_plain": "0.90 0.89 0.85 1",
     "navy": "0.13 0.18 0.32 1",
     "navy_plain": "0.13 0.18 0.32 1",
+    "tool_steel": "0.72 0.74 0.76 1",
+    "tool_handle": "0.93 0.42 0.08 1",
+    "tool_rib": "0.15 0.15 0.16 1",
+    "label_tool": "0.95 0.85 0.15 1",
 }
 
 
@@ -317,6 +329,83 @@ def _decor_xml() -> str:
     return f'<body name="decor">{"".join(g)}</body>'
 
 
+def _second_arm_xml(prefix="l_", pos=LEFT_BASE, yaw=LEFT_YAW):
+    """Prefixed copy of the SO-101 kinematic tree and actuators (meshes, materials and
+    default classes are shared with the first arm included from so101.xml)."""
+    import xml.etree.ElementTree as ET
+    root = ET.fromstring((MJCF_DIR / "so101.xml").read_text(encoding="utf-8"))
+    base = root.find("worldbody/body")
+    for el in base.iter():
+        if "name" in el.attrib and el.tag in ("body", "joint", "geom", "site", "camera"):
+            el.attrib["name"] = prefix + el.attrib["name"]
+    acts = root.find("actuator")
+    for a in acts:
+        a.attrib["name"] = prefix + a.attrib["name"]
+        a.attrib["joint"] = prefix + a.attrib["joint"]
+    q = (np.cos(yaw / 2), 0, 0, np.sin(yaw / 2))
+    body = (f'<body name="{prefix}mount" pos="{_f(*pos)}" quat="{_f(*q)}">' + ET.tostring(base, encoding="unicode")
+            + "</body>")
+    return body, "".join(ET.tostring(a, encoding="unicode") for a in acts)
+
+
+def _tool_xml():
+    """Thin steel pry tool (spudger / thin-blade battery opener) with a moulded handle, in its holder.
+
+    Tool frame: origin at the tip, +z toward the handle, +x = direction the hooked foot points.
+      blade  : 12.6 mm wide (y) x 1.2 mm thick (x) spring steel, z in [0, 0.0245]
+      foot   : 5 mm hook at the tip, bent toward +x (and 10 deg up), 1.0 mm thick (gets under a cell's + end)
+      shank  : z in [0.0245, 0.033]
+      handle : 11 (x) x 18 (y) mm moulded grip, z in [0.033, 0.088]; its lower face rests on the holder
+    """
+    tl = TOOL_LEN["tip_to_collar"]
+    hl = TOOL_LEN["handle"]
+    cx, cy = TOOL_RACK["center"]
+    z = TOOL_RACK["plate_z"] + 0.002 - tl          # tip height when the handle rests on the plate
+    steel = 'material="tool_steel" friction="0.25 0.005 0.0001" solref="0.005 1"'
+    u = np.array([np.cos(TOOL_FOOT_ANGLE), 0.0, np.sin(TOOL_FOOT_ANGLE)])
+    foot_c = np.array([-0.0006, 0.0, 0.0005]) + 0.0028 * u
+    grip = 'material="tool_handle" friction="1.0 0.005 0.0001"'
+    g = [
+        f'<geom name="pry_blade" type="box" pos="0 0 0.0125" size="0.0006 0.0063 0.0120" {steel} mass="0.004"/>',
+        # hooked foot, bent up by TOOL_FOOT_ANGLE so that it is level while the tool leans back by that angle
+        f'<geom name="pry_foot" type="box" pos="{_f(*foot_c)}" euler="0 {-TOOL_FOOT_ANGLE:.4f} 0" '
+        f'size="0.0028 0.0063 0.0005" {steel} mass="0.0005"/>',
+        f'<geom name="pry_shank" type="box" pos="0 0 {0.0245 + (tl - 0.0245) / 2:.4f}" size="0.0012 0.0040 {(tl - 0.0245) / 2:.4f}" '
+        f'{steel} mass="0.002"/>',
+        f'<geom name="pry_handle" type="box" pos="0 0 {tl + hl / 2:.4f}" size="0.0055 0.009 {hl / 2:.4f}" {grip} mass="0.014"/>',
+        # visual details: grip ribs and an end cap
+        *[f'<geom type="box" pos="{_f(0, 0, tl + 0.016 + 0.008 * k)}" size="0.0058 0.0093 0.0012" material="tool_rib" '
+          f'contype="0" conaffinity="0" group="1"/>' for k in range(4)],
+        f'<geom type="box" pos="0 0 {tl + hl - 0.002:.4f}" size="0.0058 0.0093 0.002" material="tool_rib" contype="0" '
+        f'conaffinity="0" group="1"/>',
+        f'<site name="pry_tip" pos="0.0006 0 0.0005" size="0.001" group="4"/>',
+    ]
+    # tool hangs with its foot pointing to world -x (along the open side of the holder slot)
+    q = (0.0, 0.0, 0.0, 1.0)
+    return (f'<body name="pry_tool" pos="{_f(cx, cy, z)}" quat="{_f(*q)}"><freejoint name="pry_tool_free"/>'
+            + "".join(g) + "</body>")
+
+
+def _rack_xml():
+    """Bench-top fork tool holder: aluminium plate with a slot open toward -x, on two side posts."""
+    cx, cy = TOOL_RACK["center"]
+    pz = TOOL_RACK["plate_z"]
+    hy = 0.0076                                 # slot half width: the 12.6 mm blade passes, the 18 mm handle rests
+    xb = cx + 0.0030                            # closed end of the slot (blade face + 2.4 mm)
+    t = 0.003
+    al = 'friction="0.4 0.005 0.0001"'
+    g = [_box((xb, cy - 0.025, pz - t), (cx + 0.03, cy + 0.025, pz), "aluminum", al),                 # back
+         _box((cx - 0.03, cy - 0.025, pz - t), (xb, cy - hy, pz), "aluminum", al),                    # fork tines
+         _box((cx - 0.03, cy + hy, pz - t), (xb, cy + 0.025, pz), "aluminum", al)]
+    for sy in (-1, 1):
+        g.append(_box((cx - 0.03, cy + sy * 0.025 - 0.003, 0.004), (cx + 0.03, cy + sy * 0.025 + 0.003, pz - t),
+                      "steel_blue", al))
+    g.append(_box((cx - 0.035, cy - 0.032, 0.0), (cx + 0.035, cy + 0.032, 0.004), "steel_blue", al))
+    g.append(_box((cx + 0.0302, cy - 0.02, pz - 0.0025), (cx + 0.0306, cy + 0.02, pz - 0.0005), "label_tool",
+                  'contype="0" conaffinity="0" group="1"'))
+    return '<body name="tool_rack">' + "".join(g) + "</body>"
+
+
 def _lights_xml() -> str:
     return "\n".join([
         '<light name="key" pos="0.1 -0.9 1.9" dir="0.1 0.5 -0.86" directional="false" cutoff="40" exponent="2" '
@@ -352,6 +441,7 @@ def build_scene_xml(device="tv_remote", remote_pose=None, remote_yaw=0.0, cover_
     dv.write_remote_shell(dims, MJCF_DIR / "assets" / "devices" / f"{spec.prefix}shell_{spec.name}.obj")
     global LAST_DIMS
     LAST_DIMS = dict(dims, name=spec.name, label=spec.label, nominal=remote_pose)
+    arm2, arm2_act = _second_arm_xml()
     bins = (_open_box("battery_bin", BATTERY_BIN["center"], BATTERY_BIN["size"], 0.004, "plastic_red_bin",
                       "label_battery_bin", "both")
             + _open_box("body_bin", BODY_CRATE["center"], BODY_CRATE["size"], 0.005, "plastic_blue_crate", "label_body_bin"))
@@ -379,8 +469,12 @@ def build_scene_xml(device="tv_remote", remote_pose=None, remote_yaw=0.0, cover_
 {_decor_xml()}
 {body}
 {"".join(extra)}
+{arm2}
+{_rack_xml()}
+{_tool_xml()}
 {_cameras_xml()}
   </worldbody>
+  <actuator>{arm2_act}</actuator>
   <equality>{eq}</equality>
 </mujoco>
 """

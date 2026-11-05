@@ -17,14 +17,16 @@ TCP_SITE = "gripperframe"
 
 
 class IK:
-    def __init__(self, model):
+    def __init__(self, model, prefix=""):
+        """prefix: joint/site name prefix of the arm ("" = main arm R, "l_" = tool arm L)."""
         self.m = model
         self.d = mujoco.MjData(model)
-        self.qadr = np.array([model.joint(j).qposadr[0] for j in ARM_JOINTS])
-        self.dadr = np.array([model.joint(j).dofadr[0] for j in ARM_JOINTS])
-        self.lo = np.array([model.joint(j).range[0] for j in ARM_JOINTS])
-        self.hi = np.array([model.joint(j).range[1] for j in ARM_JOINTS])
-        self.sid = model.site(TCP_SITE).id
+        joints = [prefix + j for j in ARM_JOINTS]
+        self.qadr = np.array([model.joint(j).qposadr[0] for j in joints])
+        self.dadr = np.array([model.joint(j).dofadr[0] for j in joints])
+        self.lo = np.array([model.joint(j).range[0] for j in joints])
+        self.hi = np.array([model.joint(j).range[1] for j in joints])
+        self.sid = model.site(prefix + TCP_SITE).id
         self.bid = model.site_bodyid[self.sid]
         self.jacp = np.zeros((3, model.nv))
         self.jacr = np.zeros((3, model.nv))
