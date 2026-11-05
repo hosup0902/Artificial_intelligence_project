@@ -60,12 +60,20 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 
 ## 4. 현재 상태 / 남은 문제 (최신이 위)
 
-- eval10 (seed 0-9): 40/40. eval11 (seed 10-19): 39/40 (조명 seed 18 pry 실패: 들어올리는 중 공구가 옆으로 2.8 mm 밀려 한쪽 셀만 들림 → 처진 셀 튕김).
-  - 원인: 횡방향 보정(`lat`) 갱신 줄이 이전 수정 중 누락돼 있었음 → 복구 + "높이 차 >2 mm면 올리지 말고 낮은 셀 쪽으로 이동(±2.5 mm)" 균형 우선 로직.
-  - [진행중] **eval12: 4기기 × seed 0-19 (80회) 재검증** (`code/dev_tools/_out/eval12/`).
-- ✅ ablation: `no_tool` 0/12, `push_only` 0/12 (셀 0/24) — `code/renders/ablation_<mode>.json`. 공구로 밀고 들어올려야만 빠짐.
-- ✅ README(`code/README.md`) 새 시스템 기준으로 갱신, 중간발표 pop-up 전용 스크립트는 `code/legacy_midterm/`으로 이동, `ablation.py` 추가, 결과 json의 `return_tool`은 성공 판정과 무관(`tool_returned`로 별도 기록; eval11에서 24/40 반납 성공).
-- 남은 것: eval12 결과 확인 → 실패 시 분석/수정 반복, 시연 영상 생성(`run_episode.py --video`), return_tool 개선(선택).
+- 평가 이력(4기기 × seed 0-19 = 80회): eval12 79/80 → eval13 79/80 → eval14 78/80 (AA 40/40, AAA 38/40). 매번 다른 AAA seed가 1~2개 실패.
+  결과 파일(가장 최근 확정): `code/renders/eval_bimanual_<device>.json`은 eval10(seed 0-9, 40/40). eval11~15 로그는 `code/dev_tools/_out/evalN/`.
+- [진행중] **eval15** (현재 설정 전체 80회 측정 중).
+- 최근 수정(이유):
+  - TV seed 0: 기울어진 셀이 블레이드(+ 끝 아래)와 스프링판(− 끝 위) 사이에서 대각선 압축되어 튀어오름 → TV 스프링 300 N/m(기기별 `RemoteSpec.spring_k`).
+  - AAA: 가벼운 셀이 스프링 에너지로 튕겨 나감 → AAA 스프링 150 N/m(예압 0.6 N 유지: `springref = -0.6/k`), AAA는 립 끝+1.1 mm만 밀기.
+  - AAA 셀 + 끝이 셀 밑 홈에 빠짐 → AAA 간격 19 mm(최저선 9.5 mm), notch/recess 폭 ±9.0, 공구 팁 ±8.0 mm, 넓은 블레이드 높이 9.5 mm.
+  - slide back 때 발이 립 끝에 걸림 → 되돌리기 전 발을 립 윗면 +1 mm 위로.
+  - 운반 중 느슨한 셀이 앞(스프링 쪽)으로 미끄러져 재고정 → `cells_safe` 앞쪽 기울기 ≤20°.
+  - 밀기 중 한 셀만 과도하게 밀림 → 한쪽 > 목표+1.5 mm이면 정지, 들어올리는 중 과밀림이면 공구 후퇴(두 셀 모두 충분할 때만).
+  - 한 셀만 빠진 뒤 재시도 → 삽입 위치를 notch 뒤쪽(cx0-9 mm)으로.
+- 남은 알려진 문제: AAA 들어올리기에서 두 셀 높이 불균형(공구 발이 옆으로 밀림) → 높은 셀이 립 위 3 mm 넘으면 내려놓기로 전환하는데, 이때 낮은 셀이 립 끝에 걸려 공구가 손 안에서 돌아가는 경우(light seed 16).
+- ✅ ablation: no_tool 0/12, push_only 0/12 (eval10 설정 기준). 최신 설정에서 AC/TV no_tool 0/8 셀 재확인.
+- `dev_tools/retention_test.py`(±3 g 흔들기)는 설계 점검용으로 과혹함. AC가 이 시험에서 간헐적으로 실패하지만 실제 로봇 뒤집기(ablation)에서는 셀이 빠지지 않음.
 
 ## 5. 작업 로그
 
@@ -78,3 +86,4 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - 뒤집기 문제 해결 → eval7 10/12 성공.
 - **eval10 40/40 성공** (기기당 10 seed).
 - ablation 0/12 ×2, README/legacy 정리, eval11 39/40 → pry 들어올리기 균형 로직 수정 후 80회 재검증 중.
+- AA 안정(40/40), AAA 미세 실패 반복 추적 중 (eval12~15).
