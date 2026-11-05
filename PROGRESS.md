@@ -62,7 +62,15 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 
 - 평가 이력(4기기 × seed 0-19 = 80회): eval12 79/80 → eval13 79/80 → eval14 78/80 (AA 40/40, AAA 38/40). 매번 다른 AAA seed가 1~2개 실패.
   결과 파일(가장 최근 확정): `code/renders/eval_bimanual_<device>.json`은 eval10(seed 0-9, 40/40). eval11~15 로그는 `code/dev_tools/_out/evalN/`.
-- [진행중] **eval15** (현재 설정 전체 80회 측정 중).
+- eval15 결과: TV 20/20, AC 20/20, STB 19/20(11), light 14/20(0,7,10,13,16,17) → 원인 분석 후 수정(아래), **[진행중] eval16** (`code/dev_tools/_out/eval16/`).
+- eval15 이후 수정(원인 → 해결):
+  - R 팔 hold 파지에서 고정 조(fixed jaw)가 기기 옆이 아니라 **윗모서리에 올라앉음**(조 위치 여유 0 mm) → force limiter가 누르는 힘을 squeeze로 오인해 그리퍼를 다 열어버림 → 기기가 누르기만으로 고정되다가 공구 접촉에 회전(12°)·이탈. 해결: `env.jaw_force()`(움직이는 조 접촉력만)로 파지 실패 감지 → 열고 2.5 mm 바깥으로 재파지(최대 3회). (light 0/10, stb 11 해결)
+  - 공구를 notch 안에서 기울임→수직으로 세우면 블레이드 옆 모서리가 notch 벽을 쓸어 기기를 밈 → **notch 위(T+3 mm)에서 먼저 수직으로 세우고** 보정 후 수직 하강.
+  - 블레이드 yaw 피드백(손목 roll로 보정, `yaw_axes`) — 미는 동안/들어올리는 동안.
+  - 들어올리다 블레이드가 립 밑에 걸려 기기를 들면(밀기 직후 기기 높이 대비 +0.8 mm 또는 기울기) → 내려서 더 밀고 다시 들기(snag guard, 최대 3회).
+  - 밀기 조기 종료 조건: 늦은 셀도 `lip_len+1.2 mm`(블레이드 뒷면이 립 끝을 지남) 이상일 때만.
+  - 들어올리기 측방 보정(lat) 적분 windup → 셀이 튀어나갈 때 공구가 3 mm 옆으로 튐(light 13) → 감쇠(0.9) + ±2 mm 제한.
+
 - 최근 수정(이유):
   - TV seed 0: 기울어진 셀이 블레이드(+ 끝 아래)와 스프링판(− 끝 위) 사이에서 대각선 압축되어 튀어오름 → TV 스프링 300 N/m(기기별 `RemoteSpec.spring_k`).
   - AAA: 가벼운 셀이 스프링 에너지로 튕겨 나감 → AAA 스프링 150 N/m(예압 0.6 N 유지: `springref = -0.6/k`), AAA는 립 끝+1.1 mm만 밀기.
@@ -87,3 +95,4 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - **eval10 40/40 성공** (기기당 10 seed).
 - ablation 0/12 ×2, README/legacy 정리, eval11 39/40 → pry 들어올리기 균형 로직 수정 후 80회 재검증 중.
 - AA 안정(40/40), AAA 미세 실패 반복 추적 중 (eval12~15).
+- eval15 분석 → hold 파지 실패 감지/재파지, 수직 진입, yaw 피드백, snag guard, lat 제한 추가 → eval16 진행.
