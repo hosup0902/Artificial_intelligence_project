@@ -1,0 +1,398 @@
+[
+ {
+  "mode": "no_tool",
+  "device": "ac_remote",
+  "seed": 0,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "ac_remote",
+  "seed": 1,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "ac_remote",
+  "seed": 2,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "light_remote",
+  "seed": 0,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "light_remote",
+  "seed": 1,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "light_remote",
+  "seed": 2,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "stb_remote",
+  "seed": 0,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "stb_remote",
+  "seed": 1,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "stb_remote",
+  "seed": 2,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "tv_remote",
+  "seed": 0,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "tv_remote",
+  "seed": 1,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "no_tool",
+  "device": "tv_remote",
+  "seed": 2,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ }
+]

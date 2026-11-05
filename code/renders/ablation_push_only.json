@@ -1,0 +1,686 @@
+[
+ {
+  "mode": "push_only",
+  "device": "ac_remote",
+  "seed": 0,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "ac_remote",
+  "seed": 1,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    false
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "ac_remote",
+  "seed": 2,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    false
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "light_remote",
+  "seed": 0,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "light_remote",
+  "seed": 1,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    false
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "light_remote",
+  "seed": 2,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "stb_remote",
+  "seed": 0,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "stb_remote",
+  "seed": 1,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    false
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "stb_remote",
+  "seed": 2,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "tv_remote",
+  "seed": 0,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "flip_over_bin",
+    false
+   ],
+   [
+    "return_tool",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "tv_remote",
+  "seed": 1,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    false
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ },
+ {
+  "mode": "push_only",
+  "device": "tv_remote",
+  "seed": 2,
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "stages": [
+   [
+    "push_to_fence",
+    true
+   ],
+   [
+    "pick_tool",
+    true
+   ],
+   [
+    "slide_cover",
+    true
+   ],
+   [
+    "reseat_on_fence",
+    true
+   ],
+   [
+    "hold_device",
+    true
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "pry_cells",
+    false
+   ],
+   [
+    "grasp_device",
+    true
+   ],
+   [
+    "return_tool",
+    false
+   ],
+   [
+    "flip_over_bin",
+    false
+   ]
+  ]
+ }
+]
