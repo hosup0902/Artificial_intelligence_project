@@ -4,6 +4,8 @@
   python live_demo.py --device light_remote --seed 1 --speed 0.5  # half speed (slow motion)
   python live_demo.py --device ac_remote --seed 2 --pause-stages  # auto-pause after every stage
   python live_demo.py --device stb_remote --seed 3 --cam free --clean   # free mouse camera, no side panels
+  python live_demo.py --device tv_remote --seed 0 --mode no_tool       # control: just turn it over (cells stay in)
+  python live_demo.py --device tv_remote --seed 0 --mode push_only     # control: push into springs, no lift
 
 Keys (in the viewer window):
   Space      pause / resume (the episode starts paused so you can set up the camera and the recorder)
@@ -155,13 +157,15 @@ def main():
     ap.add_argument("--clean", action="store_true", help="hide the viewer's side panels (clean recording)")
     ap.add_argument("--pause-stages", action="store_true", help="pause automatically after every stage")
     ap.add_argument("--no-start-paused", action="store_true", help="start running immediately")
+    ap.add_argument("--mode", default="full", choices=("full", "no_tool", "push_only"),
+                    help="full policy, or one of the control experiments of ablation.py")
     ap.add_argument("--hold", type=float, default=0.0, help="keep the window open N s after the end (0 = until closed)")
     args = ap.parse_args()
 
     env = BatteryRemovalEnv(device=args.device)
     env.reset(args.seed)
-    pol = SkillPolicy(env, verbose=True)
-    print(f"device {args.device} ({DEVICES[args.device].label}), seed {args.seed}. "
+    pol = SkillPolicy(env, verbose=True, use_tool=args.mode != "no_tool", lift_cells=args.mode != "push_only")
+    print(f"mode {args.mode}, device {args.device} ({DEVICES[args.device].label}), seed {args.seed}. "
           f"Viewer is {'running' if args.no_start_paused else 'PAUSED: press Space to start'}.")
     lv = LiveView(env, pol, speed=args.speed, cam=args.cam, clean=args.clean, pause_stages=args.pause_stages,
                   start_paused=not args.no_start_paused)
