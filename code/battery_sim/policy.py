@@ -866,14 +866,16 @@ class SkillPolicy:
             ybal = 0.0
             lat = 0.0
             yd = R[:, 1]
-            for k in range(30):
+            for k in range(45):
                 st = self.cell_state()
                 b0, b1 = st[0][1], st[1][1]
                 if min(b0, b1) > cz + 0.0015:
                     break
                 if abs(b0 - b1) > 0.002 and z > dm["floor"] + 0.004:
-                    ybal = float(np.clip(ybal + 0.0003 * np.sign(b0 - b1), -0.0012, 0.0012))  # cell1 is at +y
-                z = min(z + 0.0015, cz + 0.007)
+                    # one + end lags: hold the height and shift the foot toward it (cell1 is at +y) until level
+                    ybal = float(np.clip(ybal + 0.0005 * np.sign(b0 - b1), -0.0025, 0.0025))
+                else:
+                    z = min(z + 0.0015, cz + 0.007)
                 # lever back gradually (0 deg near the floor -> LEAN at the lip top): keeps the wrist inside its
                 # flex range as the tool rises, without a sudden re-orientation under load
                 frac = float(np.clip((z - dm["floor"] - 0.004) / max(cz - dm["floor"] - 0.004, 1e-3), 0, 1))
@@ -881,6 +883,7 @@ class SkillPolicy:
                 tgt = self.local(xb, yoff, z) + yd * ybal
                 eik = yield from A.move(tgt + bias + yd * lat, axes, off, speed=0.01, min_time=0.12, settle=0.1)
                 ey = float(yd @ (tgt - self.env.d.site("pry_tip").xpos))
+                lat = float(np.clip(lat + 0.6 * np.clip(ey, -0.0015, 0.0015), -0.004, 0.004))   # keep the foot centred
                 if self.verbose and self.on_phase is not None:
                     pa, _ = A.tcp_actual()
                     pa, Ra = A.tcp_actual(); _, Rt_ = self.tool_pose()
