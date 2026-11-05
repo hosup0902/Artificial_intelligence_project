@@ -105,10 +105,11 @@ class RemoteSpec:
     cell: CellType = AA
     name: str = "tv_remote"
     label: str = "TV 리모컨"
+    spring_k: float | None = None       # N/m, terminal spring of this model (None: the cell type's default)
 
 
 DEVICES = {
-    "tv_remote": RemoteSpec(),
+    "tv_remote": RemoteSpec(spring_k=300.0),
     "stb_remote": RemoteSpec(name="stb_remote", label="셋톱박스 리모컨 (AAA)", length=0.165, width=0.046, thick=0.019,
                              cell=AAA, body_material="plastic_mouse", sticker_material="sticker_stb",
                              cell_materials=["battery_b", "battery_b"]),
@@ -232,14 +233,15 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
 
     # spring plungers (one per cell) as child bodies with sprung slide joints (+x = compression)
     plungers = []
+    k_spring = spec.spring_k or ct.spring_k
     pz_lo, pz_hi = floor + 0.0008 - cz, cov_z0 - 0.0003 - cz          # plate extent relative to the cell axis
     pz_c, pz_h = (pz_lo + pz_hi) / 2, (pz_hi - pz_lo) / 2
     for i in range(spec.n_cells):
         yc = (i - (spec.n_cells - 1) / 2) * cell_pitch
         plungers.append(
             f'<body name="{p}plunger{i}" pos="{_f(plunger_x, yc, cz)}">'
-            f'<joint name="{p}spring{i}" type="slide" axis="1 0 0" range="-0.0015 {SPRING_STROKE}" stiffness="{ct.spring_k}" '
-            f'springref="{-0.6 / ct.spring_k:.5f}" damping="0.4"/>'
+            f'<joint name="{p}spring{i}" type="slide" axis="1 0 0" range="-0.0015 {SPRING_STROKE}" stiffness="{k_spring}" '
+            f'springref="{-0.6 / k_spring:.5f}" damping="0.4"/>'
             # tall contact plate (floor+0.8 mm .. pocket top-0.3 mm): an upside-down cell whose - end lifts by a
             # few mm still bears on the spring, so it stays pressed against the + stop under the lip
             f'<geom type="box" pos="0 0 {pz_c:.5f}" size="0.0006 {min(0.005, ct.r - 0.0003):.4f} {pz_h:.5f}" '

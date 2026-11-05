@@ -871,6 +871,11 @@ class SkillPolicy:
                 b0, b1 = st[0][1], st[1][1]
                 if min(b0, b1) > cz + 0.0015:
                     break
+                # the leaning blade pushes a rising + end further into its spring: do not let the cells go much
+                # past the unlatch shift (spring stroke limit -> the - end would see-saw up); the blade's back face
+                # must stay beyond the lip end (cx0 + lip + 0.3 mm)
+                if max(st[0][0], st[1][0]) > UNLATCH_SHIFT + 0.0012:
+                    xb = max(xb - 0.0005, cx0 + dm["lip_len"] + 0.0003 + 0.0008)
                 if abs(b0 - b1) > 0.002 and z > dm["floor"] + 0.004:
                     # one + end lags: hold the height and shift the foot toward it (cell1 is at +y) until level
                     ybal = float(np.clip(ybal + 0.0005 * np.sign(b0 - b1), -0.0025, 0.0025))
