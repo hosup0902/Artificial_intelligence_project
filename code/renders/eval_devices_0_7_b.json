@@ -1,0 +1,130 @@
+[
+ {
+  "seed": 0,
+  "device": "tv_remote",
+  "success": false,
+  "cells_in_bin": [
+   false,
+   true
+  ],
+  "body_in_crate": false,
+  "cell_in_crate": false,
+  "peak_force": 24.0,
+  "sim_time": 49.16,
+  "steps": 24579,
+  "failed_stage": "flip_over_bin",
+  "wall": 27.7
+ },
+ {
+  "seed": 1,
+  "device": "stb_remote",
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "cell_in_crate": false,
+  "peak_force": 28.04,
+  "sim_time": 50.51,
+  "steps": 25255,
+  "failed_stage": "grasp_device",
+  "wall": 32.4
+ },
+ {
+  "seed": 2,
+  "device": "ac_remote",
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "cell_in_crate": false,
+  "peak_force": 27.17,
+  "sim_time": 46.85,
+  "steps": 23425,
+  "failed_stage": "grasp_device",
+  "wall": 28.3
+ },
+ {
+  "seed": 3,
+  "device": "light_remote",
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "cell_in_crate": false,
+  "peak_force": 20.21,
+  "sim_time": 62.81,
+  "steps": 31405,
+  "failed_stage": "unlatch_cells",
+  "wall": 30.2
+ },
+ {
+  "seed": 4,
+  "device": "tv_remote",
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "cell_in_crate": false,
+  "peak_force": 21.54,
+  "sim_time": 51.82,
+  "steps": 25910,
+  "failed_stage": "grasp_device",
+  "wall": 31.2
+ },
+ {
+  "seed": 5,
+  "device": "stb_remote",
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "cell_in_crate": false,
+  "peak_force": 22.64,
+  "sim_time": 62.31,
+  "steps": 31155,
+  "failed_stage": "unlatch_cells",
+  "wall": 35.9
+ },
+ {
+  "seed": 6,
+  "device": "ac_remote",
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "cell_in_crate": false,
+  "peak_force": 21.83,
+  "sim_time": 45.26,
+  "steps": 22630,
+  "failed_stage": "grasp_device",
+  "wall": 29.8
+ },
+ {
+  "seed": 7,
+  "device": "light_remote",
+  "success": false,
+  "cells_in_bin": [
+   false,
+   false
+  ],
+  "body_in_crate": false,
+  "cell_in_crate": false,
+  "peak_force": 16.64,
+  "sim_time": 62.53,
+  "steps": 31265,
+  "failed_stage": "unlatch_cells",
+  "wall": 29.4
+ }
+]
