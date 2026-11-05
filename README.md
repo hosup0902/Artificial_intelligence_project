@@ -27,3 +27,21 @@ python live_demo.py --device tv_remote --seed 5             # 대화형 뷰어 �
 ```
 
 자세한 내용은 `code/README.md`.
+
+## 제출 전 확인 (과제2.pdf 7절)
+
+| 항목 | 위치 |
+|---|---|
+| 태스크 시나리오(환경·과정·성공 판별) | `report.pdf` 1장, 최종 PPT 2–3번 |
+| 직접 구성한 환경, 의도대로 렌더링 | `report.pdf` 2장, `code/renders/final/`, `code/render_rollout_stages.py` |
+| 정책 선정과 이유 | `report.pdf` 3장 |
+| 여러 seed 롤아웃 success rate | `report.pdf` 4장 (seed 0–39 × 4기기), `code/renders/*.json` |
+| 실패 케이스 원인 분석 | `report.pdf` 5장 (Phase 1·2, 환경/정책 구분, 전후 비교) |
+| 중간·최종 PPT, 코드, Report PDF, Demo Video | `presentation/`, `code/`, `report.pdf`, `demo.mp4`(직접 촬영) |
+| README만 보고 실행 가능 | `code/README.md` |
+| LLM 모델·프롬프트·생성 코드 | `code/PROMPTS_phase1.md`(모델명 포함), `code/PROMPTS_phase2.md`, `code/` |
+| Secret 미포함 | API 키·토큰 없음 (코드는 로컬 시뮬레이션만 사용) |
+| Demo 3분 이내, 환경·롤아웃·평가 설명 | `presentation/demo_video_script.md` |
+
+ZIP 이름: `2024315782_이호섭_assignment2.zip` — `presentation/`, `code/`, `report.pdf`, `demo.mp4`를 최상위에 넣는다
+(`code/dev_tools/_out/`, `code/.venv/`, `__pycache__`는 넣지 않아도 됨).
