@@ -793,6 +793,9 @@ class SkillPolicy:
         if attempt > 0 and any(free0) and not all(free0):
             yoff = 0.0011 * (1 if not free0[1] else -1)          # cell1 at +y, cell0 at -y
         z_low = dm["slot_floor"] + 0.0011 + 0.0003 * attempt     # foot bottom 0.6 mm above the notch floor
+        # push target: AA 6.2 mm; the light AAA cells only as far as needed (blade back face 0.3 mm past the lip end)
+        # so that less spring energy is stored when their + ends come up
+        unlatch = UNLATCH_SHIFT if dm["cell_r"] > 0.006 else dm["lip_len"] + 0.0011
 
         bias = np.zeros(3)      # commanded-vs-measured tip offset (servo sag, grasp compliance)
 
@@ -843,14 +846,21 @@ class SkillPolicy:
         axes_push = axes
         axes = axes_v
         yield from correct(x_in, z_low)
+        _, Rt_now = self.tool_pose()
+        bx = R.T @ Rt_now[:, 0]
+        self._blade_yaw = float(np.degrees(np.arctan2(bx[1], bx[0])))
+        self.say(f"[L] blade yaw error {self._blade_yaw:+.1f} deg, tilt {np.degrees(np.arcsin(np.clip(bx[2], -1, 1))):+.1f} deg")
         self.phase("pry_inserted")
         # push both cells into their springs (feedback on the + end positions)
         xb = x_in
         for _ in range(60):
             # stop on the measured cell shift; limit on the MEASURED tip (it lags the command under spring load)
             tip_x = float(R[:, 0] @ (self.env.d.site("pry_tip").xpos - p)) - cx0
-            if min(st[0] for st in self.cell_state()) > UNLATCH_SHIFT or tip_x > 0.0095:
+            sh = [st[0] for st in self.cell_state()]
+            if min(sh) > unlatch or tip_x > 0.0095:
                 break
+            if max(sh) > unlatch + 0.0015 and min(sh) > dm["lip_len"] + 0.0005:
+                break                     # slightly skewed blade: do not drive the leading cell to the stroke end
             xb += 0.0005
             yield from A.move(P(xb, z_low), axes, off, speed=0.006, min_time=0.06, settle=0.03)
         pushed = [st[0] for st in self.cell_state()]
@@ -871,10 +881,14 @@ class SkillPolicy:
                 b0, b1 = st[0][1], st[1][1]
                 if min(b0, b1) > cz + 0.0015:
                     break
+                if max(b0, b1) > cz + 0.003:
+                    # one cell is well above the lip top while the other lags: lifting (or waiting) further lets
+                    # the high one slip over the blade; set the free one down now, the retry takes the other
+                    break
                 # the leaning blade pushes a rising + end further into its spring: do not let the cells go much
                 # past the unlatch shift (spring stroke limit -> the - end would see-saw up); the blade's back face
                 # must stay beyond the lip end (cx0 + lip + 0.3 mm)
-                if max(st[0][0], st[1][0]) > UNLATCH_SHIFT + 0.0012:
+                if min(st[0][0], st[1][0]) > unlatch and max(st[0][0], st[1][0]) > unlatch + 0.0012:
                     xb = max(xb - 0.0005, cx0 + dm["lip_len"] + 0.0003 + 0.0008)
                 if abs(b0 - b1) > 0.002 and z > dm["floor"] + 0.004:
                     # one + end lags: hold the height and shift the foot toward it (cell1 is at +y) until level

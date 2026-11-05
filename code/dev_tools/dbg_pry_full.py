@@ -17,7 +17,7 @@ def cb(name):
     st = [(round(1000*a,1), round(1000*b,1), round(t,1)) for a, b, t in pol.cell_state()]
     tp = env.d.site("pry_tip").xpos; p, R = pol.device()
     print(f"{cnt[0]:02d} {name}: t={env.d.time:.2f} cells {st} tip(dev) {np.round(1000*(R.T@(tp-p)) - [1000*pol.dm['cx0'],0,0],1)}")
-    if name not in ("pry_lift_step",) or 14 <= cnt[0] <= 17:
+    if name not in ("pry_lift_step",) or 12 <= cnt[0] <= 15:
         pl = env.d.site("remote_plus").xpos
         views(env, str(HERE / "_out" / f"pf_{cnt[0]:02d}_{name}.png"), [(pl + [0.01, 0, 0.004], 0.08, 90, -10), (pl + [0.01, 0, 0.004], 0.08, 270, -10), (pl, 0.1, 200, -40)])
 pol.on_phase = cb

@@ -54,8 +54,8 @@ class CellType:
         return self.pitch / 2 - chord - 0.0002
 
 
-AA = CellType("AA", 0.00725, 0.0505, 0.023, 0.016, 0.0025)       # 1.5 mm rib between the cells
-AAA = CellType("AAA", 0.00525, 0.0445, 0.0115, 0.018, 0.0012, 200.0)   # lowest lines at |y| = 8.5 / 9 mm
+AA = CellType("AA", 0.00725, 0.0505, 0.023, 0.016, 0.0025)       # 1.5 mm rib; lowest lines at |y| = 8 mm
+AAA = CellType("AAA", 0.00525, 0.0445, 0.0115, 0.019, 0.0012, 150.0)   # lowest lines at |y| = 9.5 mm
 AA_R, AA_L, AA_MASS = AA.r, AA.length, AA.mass
 SPRING_K = 400.0                   # N/m coil spring (1.5 mm preload -> 0.6 N; ~3 N when pushed past the lip)
 SPRING_STROKE = 0.0100             # plunger travel beyond the seated position
@@ -66,9 +66,9 @@ SLOT_HALF_W = 0.0095               # pry notch half-width: just outside both cel
 LIP_IN = 0.0048                    # retaining lips start at |y| = 4.8 mm: the 9.6 mm gap between them is narrower
                                    # than any cell (AAA 10.5 mm), the pry tool's 8 mm neck passes through it
 SLOT_LEN = 0.010                   # pry notch length behind the + end stop (short: a cell cannot drop into it)
-REC_HALF_W = 0.0090                # under the cells the recess is only as wide as the tool foot (+-8.4 mm) needs:
-                                   # the cells' lowest lines (|y| = 8.5 / 9 mm) rest on its edges, so a cell end
-                                   # cannot drop into it
+REC_HALF_W = 0.0090                # under the cells the recess is only as wide as the tool foot (+-8.4 mm) needs;
+                                   # the light AAA cells sit wider apart so their lowest lines (9.5 mm) rest on solid
+                                   # floor beside it (a + end sinking into it lets an upside-down cell pivot out)
 PRY_DEPTH = 0.003                  # notch floor sits 3 mm below the pocket floor ...
 PRY_EXT = 0.016                    # ... and the recess continues 16 mm under the + ends
 REAR_LIP = 0.004                   # end-stop thickness between the cover recess and the pocket
