@@ -62,7 +62,7 @@ def main():
         failed = next((n for n, ok in final.items() if not ok and n != "reseat_on_fence"), None)
         r = dict(seed=sd, device=dev, success=bool(rep.success), cells_in_bin=[bool(c) for c in rep.cells_in_battery_bin],
                  body_in_crate=bool(rep.body_in_crate), cell_in_crate=bool(rep.cell_in_crate),
-                 peak_force=round(float(env.log.peak_force), 2),
+                 peak_force=round(float(env.log.peak_force), 2), peak_info=env.log.peak_info,
                  sim_time=round(float(env.d.time), 2), steps=int(round(env.d.time / env.m.opt.timestep)),
                  failed_stage=failed, wall=round(time.time() - t0, 1))
         results.append(r)

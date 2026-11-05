@@ -40,6 +40,7 @@ class CellType:
     mass: float
     pitch: float
     div_h: float          # centre divider height
+    spring_k: float = 400.0   # N/m: terminal spring rate (AAA devices use a softer spring for the lighter cell)
 
     @property
     def col_len(self):
@@ -54,7 +55,7 @@ class CellType:
 
 
 AA = CellType("AA", 0.00725, 0.0505, 0.023, 0.016, 0.0025)       # 1.5 mm rib between the cells
-AAA = CellType("AAA", 0.00525, 0.0445, 0.0115, 0.017, 0.0012)
+AAA = CellType("AAA", 0.00525, 0.0445, 0.0115, 0.018, 0.0012, 200.0)   # lowest lines at |y| = 8.5 / 9 mm
 AA_R, AA_L, AA_MASS = AA.r, AA.length, AA.mass
 SPRING_K = 400.0                   # N/m coil spring (1.5 mm preload -> 0.6 N; ~3 N when pushed past the lip)
 SPRING_STROKE = 0.0100             # plunger travel beyond the seated position
@@ -65,6 +66,9 @@ SLOT_HALF_W = 0.0095               # pry notch half-width: just outside both cel
 LIP_IN = 0.0048                    # retaining lips start at |y| = 4.8 mm: the 9.6 mm gap between them is narrower
                                    # than any cell (AAA 10.5 mm), the pry tool's 8 mm neck passes through it
 SLOT_LEN = 0.010                   # pry notch length behind the + end stop (short: a cell cannot drop into it)
+REC_HALF_W = 0.0090                # under the cells the recess is only as wide as the tool foot (+-8.4 mm) needs:
+                                   # the cells' lowest lines (|y| = 8.5 / 9 mm) rest on its edges, so a cell end
+                                   # cannot drop into it
 PRY_DEPTH = 0.003                  # notch floor sits 3 mm below the pocket floor ...
 PRY_EXT = 0.016                    # ... and the recess continues 16 mm under the + ends
 REAR_LIP = 0.004                   # end-stop thickness between the cover recess and the pocket
@@ -126,10 +130,12 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
     """
     p = spec.prefix
     L, W, T = spec.length, spec.width, spec.thick
-    floor = 0.004                      # bottom slab (button side)
     cov_t = 0.0016                     # cover thickness
-    cov_z0 = T - cov_t                 # cover underside = top of the pocket walls / lips
     ct = spec.cell
+    # bottom slab (button side): the pocket is as deep as the cell plus 1.9 mm, as in a real remote (a deeper
+    # pocket would let an upside-down cell swing its - end far off the spring)
+    floor = max(0.004, T - cov_t - 2 * ct.r - 0.0019)
+    cov_z0 = T - cov_t                 # cover underside = top of the pocket walls / lips
     cell_pitch = ct.pitch
     inner_w = (spec.n_cells - 1) * cell_pitch + 2 * ct.r + 0.0005   # 0.25 mm side clearance
     hw_in = inner_w / 2
@@ -158,6 +164,8 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
     for s_ in (-1, 1):
         y0, y1 = sorted((s_ * slot_w, s_ * W / 2))
         g.append(_box(f"{p}slab{'L' if s_ > 0 else 'R'}", (nx0, y0, 0), (px1, y1, floor), m, col))
+        y0, y1 = sorted((s_ * REC_HALF_W, s_ * slot_w))
+        g.append(_box(f"{p}recedge{'L' if s_ > 0 else 'R'}", (cx0, y0, 0), (px1, y1, floor), m, col))
     g.append(_box(f"{p}slotfloor", (nx0, -slot_w, 0), (px1, slot_w, slot_floor), m, col))
     # solid rear section, notch side walls, + end stop and retaining lips
     g.append(_box(f"{p}rear", (-L / 2, -W / 2, floor), (nx0, W / 2, T), m, col))
@@ -191,7 +199,7 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
     g.append(f'<geom type="mesh" mesh="{shell_mesh}" material="{m}_plain" contype="0" conaffinity="0" group="1"/>')
     asset_xml = f'<mesh name="{shell_mesh}" file="devices/{shell_mesh}.obj"/>'
     shell_dims = dict(L=L, W=W, T=T, floor=floor, cov_z0=cov_z0, hw_in=hw_in, rim=rim, cx0=cx0, cx1=cx1, rx=rx,
-                      nx0=nx0, px1=px1, slot_w=slot_w, slot_floor=slot_floor, lip_z0=lip_z0, lip_len=LIP_LEN,
+                      nx0=nx0, px1=px1, slot_w=slot_w, rec_w=REC_HALF_W, slot_floor=slot_floor, lip_z0=lip_z0, lip_len=LIP_LEN,
                       cell_r=ct.r, cell_len=ct.col_len, cell_pitch=cell_pitch,
                       # arm R grasps the solid section 28 mm behind the pry notch (closer, its fingers disturb the
                       # raised cells; the open pocket must stay clear so the cells can fall out)
@@ -230,8 +238,8 @@ def remote_body_xml(spec: RemoteSpec, pos, yaw: float, with_cover=True, cover_of
         yc = (i - (spec.n_cells - 1) / 2) * cell_pitch
         plungers.append(
             f'<body name="{p}plunger{i}" pos="{_f(plunger_x, yc, cz)}">'
-            f'<joint name="{p}spring{i}" type="slide" axis="1 0 0" range="-0.0015 {SPRING_STROKE}" stiffness="{SPRING_K}" '
-            f'springref="-0.0015" damping="0.4"/>'
+            f'<joint name="{p}spring{i}" type="slide" axis="1 0 0" range="-0.0015 {SPRING_STROKE}" stiffness="{ct.spring_k}" '
+            f'springref="{-0.6 / ct.spring_k:.5f}" damping="0.4"/>'
             # tall contact plate (floor+0.8 mm .. pocket top-0.3 mm): an upside-down cell whose - end lifts by a
             # few mm still bears on the spring, so it stays pressed against the + stop under the lip
             f'<geom type="box" pos="0 0 {pz_c:.5f}" size="0.0006 {min(0.005, ct.r - 0.0003):.4f} {pz_h:.5f}" '
@@ -363,8 +371,9 @@ def write_remote_shell(dims: dict, path) -> None:
         return mf.Manifold.cube(tuple(hi - lo)).translate(tuple(lo))
     pocket = cube((dims["cx0"], -dims["hw_in"], dims["floor"]), (dims["cx1"], dims["hw_in"], T + 0.01))
     recess = cube((dims["rx"], -(W / 2 - dims["rim"]), dims["cov_z0"]), (L / 2 + 0.01, W / 2 - dims["rim"], T + 0.01))
-    slot = cube((dims["nx0"], -dims["slot_w"], dims["slot_floor"]), (dims["px1"], dims["slot_w"], T + 0.01))
-    shell = body - pocket - recess - slot
+    slot = cube((dims["nx0"], -dims["slot_w"], dims["slot_floor"]), (dims["cx0"] + 1e-4, dims["slot_w"], T + 0.01))
+    rec = cube((dims["cx0"], -dims["rec_w"], dims["slot_floor"]), (dims["px1"], dims["rec_w"], T + 0.01))
+    shell = body - pocket - recess - slot - rec
     mesh = shell.to_mesh()
     tm = trimesh.Trimesh(vertices=np.asarray(mesh.vert_properties)[:, :3], faces=np.asarray(mesh.tri_verts), process=True)
     path.parent.mkdir(parents=True, exist_ok=True)

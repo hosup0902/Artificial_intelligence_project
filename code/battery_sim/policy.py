@@ -904,6 +904,7 @@ class SkillPolicy:
             self.phase("pry_lifted")
             # let the springs push the raised cells back over the lip top, set them down on it
             yield from A.move(P(cx0 + 0.001, z) + yd * ybal, axes, off, speed=0.006, settle=0.1)
+            self.phase("pry_slid_back")
             yield from A.move(P(cx0 + 0.001, cz - 0.0035), axes, off, speed=0.006, settle=0.1)
             self.phase("pry_set_down")
             yield from A.move(P(cx0 - 0.0088, cz - 0.0035), axes, off, speed=0.008, settle=0.1)

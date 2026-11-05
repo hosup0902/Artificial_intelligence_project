@@ -48,6 +48,7 @@ class EpisodeLog:
     seed: int
     stages: list[tuple[str, float, bool]] = field(default_factory=list)   # (name, sim time, ok)
     peak_force: float = 0.0
+    peak_info: str = ""                     # which contact produced the peak, and when
     latch_released_at: float | None = None
 
 
@@ -196,7 +197,10 @@ class BatteryRemovalEnv:
             b1, b2 = m.geom_bodyid[c.geom1], m.geom_bodyid[c.geom2]
             if (b1 in self.robot_bodies and b2 in self.device_bids) or (b2 in self.robot_bodies and b1 in self.device_bids):
                 mujoco.mj_contactForce(m, d, i, f6)
-                self.log.peak_force = max(self.log.peak_force, abs(f6[0]))
+                if abs(f6[0]) > self.log.peak_force:
+                    self.log.peak_force = abs(f6[0])
+                    self.log.peak_info = (f"{m.geom(c.geom1).name or m.body(b1).name} | "
+                                          f"{m.geom(c.geom2).name or m.body(b2).name} at t={d.time:.2f}s")
                 if self.cover_bid in (b1, b2):
                     press += abs(f6[0]) * abs(c.frame[2])          # vertical component of the normal force
         self._cover_press = press
