@@ -60,10 +60,12 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 
 ## 4. 현재 상태 / 남은 문제 (최신이 위)
 
-- ✅✅ **eval10: 40/40 성공** (4기기 × seed 0-9; TV/STB/AC/조명 각 10/10). 기기별 최대 피크 접촉력 28~33 N(기준 40 N).
-  결과 파일: `code/renders/eval_bimanual_<device>.json` (원본 로그 `code/dev_tools/_out/eval10/`).
-  - 직전 수정: 포켓 깊이 = 셀+1.9 mm(기기별 바닥 두께), 셀 밑 recess 폭 ±9.0(셀 최저선이 가장자리에 걸림), AAA 간격 18 mm·스프링 200 N/m·예압 0.6 N(가벼운 AAA 셀이 스프링에 튕겨 나가던 문제), **그리퍼 서보 힘 제한**(잡는 동안 18~30 N 유지; 뒤집힌 채 들 때 98 N까지 오르던 문제), 흔들기/들기 완화.
-- 다음 할 일: ① ablation(`python ablation.py --mode no_tool|push_only`) — 둘 다 실패해야 함, ② seed 10-19 추가 평가, ③ return_tool(거치대 꽂기) 개선(성공 판정 무관, `failed_stage`에서 제외하고 `tool_returned`로 기록), ④ 구 스크립트 정리(`ablation_no_unlatch.py`, `unlatch_experiment.py`, `render_latch_states.py`, `latch_test.py`는 중간발표 pop-up 설계용), README 갱신, 영상 생성.
+- eval10 (seed 0-9): 40/40. eval11 (seed 10-19): 39/40 (조명 seed 18 pry 실패: 들어올리는 중 공구가 옆으로 2.8 mm 밀려 한쪽 셀만 들림 → 처진 셀 튕김).
+  - 원인: 횡방향 보정(`lat`) 갱신 줄이 이전 수정 중 누락돼 있었음 → 복구 + "높이 차 >2 mm면 올리지 말고 낮은 셀 쪽으로 이동(±2.5 mm)" 균형 우선 로직.
+  - [진행중] **eval12: 4기기 × seed 0-19 (80회) 재검증** (`code/dev_tools/_out/eval12/`).
+- ✅ ablation: `no_tool` 0/12, `push_only` 0/12 (셀 0/24) — `code/renders/ablation_<mode>.json`. 공구로 밀고 들어올려야만 빠짐.
+- ✅ README(`code/README.md`) 새 시스템 기준으로 갱신, 중간발표 pop-up 전용 스크립트는 `code/legacy_midterm/`으로 이동, `ablation.py` 추가, 결과 json의 `return_tool`은 성공 판정과 무관(`tool_returned`로 별도 기록; eval11에서 24/40 반납 성공).
+- 남은 것: eval12 결과 확인 → 실패 시 분석/수정 반복, 시연 영상 생성(`run_episode.py --video`), return_tool 개선(선택).
 
 ## 5. 작업 로그
 
@@ -75,3 +77,4 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - 4기기 평가 시작. flip 플래너 개선(후보 확대, 착지점 조준, 낮은 높이 선호), 그립 조절(regulate_grip), 수거함 확대(15×15), L이 먼저 물러난 뒤 R 재파지(순차), 운반 중 셀 안전 조건, 손가락 패드.
 - 뒤집기 문제 해결 → eval7 10/12 성공.
 - **eval10 40/40 성공** (기기당 10 seed).
+- ablation 0/12 ×2, README/legacy 정리, eval11 39/40 → pry 들어올리기 균형 로직 수정 후 80회 재검증 중.
