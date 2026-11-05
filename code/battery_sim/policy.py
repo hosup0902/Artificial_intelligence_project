@@ -901,13 +901,23 @@ class SkillPolicy:
         # + ends up into the lip; re-orienting inside the 2 mm-wider notch would sweep the blade edge into its
         # side wall and shove the device), re-aim, then go straight down
         axes_push = axes
-        yield from A.move(P(x_in, T + 0.003), axes_v, off, speed=0.02, min_time=0.6, settle=0.1)
-        axes = axes_v
-        yield from correct(x_in, T + 0.003)
-        self.phase("pry_above")
-        e1 = yield from A.move(P(x_in, z_low + 0.004), axes, off, speed=0.02, settle=0.15)
-        yield from correct(x_in, z_low + 0.004)
-        yield from A.move(P(x_in, z_low), axes, off, speed=0.01, settle=0.15)
+        e_up = yield from A.move(P(x_in, T + 0.003), axes_v, off, speed=0.02, min_time=0.6, settle=0.1)
+        if e_up < 0.0015:
+            axes = axes_v
+            yield from correct(x_in, T + 0.003)
+            self.phase("pry_above")
+            e1 = yield from A.move(P(x_in, z_low + 0.004), axes, off, speed=0.02, settle=0.15)
+            yield from correct(x_in, z_low + 0.004)
+            yield from A.move(P(x_in, z_low), axes, off, speed=0.01, settle=0.15)
+        else:
+            # upright is out of reach this high (wrist_flex limit): enter leaning, stand upright at the bottom
+            self.say(f"[L] upright pose above the notch not reachable (ik {1000*e_up:.1f} mm): leaning entry")
+            yield from A.move(P(x_in, T + 0.003), axes, off, speed=0.02, min_time=0.6, settle=0.1)
+            yield from correct(x_in, T + 0.003)
+            self.phase("pry_above")
+            e1 = yield from A.move(P(x_in, z_low), axes, off, speed=0.03, settle=0.15)
+            yield from A.move(P(x_in, z_low), axes_v, off, speed=0.02, min_time=0.6, settle=0.1)
+            axes = axes_v
         yield from correct(x_in, z_low)
         _, Rt_now = self.tool_pose()
         bx = R.T @ Rt_now[:, 0]
