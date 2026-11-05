@@ -22,9 +22,10 @@ the springs does **not** release them (see the ablations below); they have to be
 
 | experiment | command | result |
 |---|---|---|
-| full bimanual policy, 4 devices × seeds 0-9 | `python run_episode.py --seeds 0-9 --device <dev>` | **40/40** (each device 10/10), peak contact force on the device ≤ 33 N |
-| ablation: no tool (just flip + shake) | `python ablation.py --mode no_tool --seeds 0-2` | 0/12, cells in bin 0/24 |
-| ablation: push into springs, no lift | `python ablation.py --mode push_only --seeds 0-2` | 0/12, cells in bin 0/24 |
+| full bimanual policy, 4 devices × seeds 0-19 | `python run_episode.py --seeds 0-19 --device <dev>` | **80/80** (each device 20/20), every pry on the first attempt; peak contact force on the device mean 25.4 N, max 32.6 N; mean episode 69.9 s sim (34 951 physics steps); tool returned to its holder 76/80 |
+| held-out seeds 20-39 (never used during development) | `python run_episode.py --seeds 20-39 --device <dev>` | see `REPORT_MATERIAL.md` §11 |
+| ablation: no tool (just flip + shake) | `python ablation.py --mode no_tool --seeds 0-4` | 0/20, cells in bin 0/40 |
+| ablation: push into springs, no lift | `python ablation.py --mode push_only --seeds 0-4` | 0/20, cells in bin 0/40 |
 
 Per-episode results: `renders/eval_bimanual_<device>.json`, `renders/ablation_<mode>.json`.
 
@@ -50,7 +51,8 @@ uv pip install --python .venv/bin/python -r requirements.txt     # Windows: .ven
 python run_episode.py --seeds 0 --device tv_remote             # one verbose episode
 python run_episode.py --seeds 0 --device tv_remote --video     # + mp4 in videos/ (needs a GL backend)
 python run_episode.py --seeds 0-9 --device ac_remote -q --out results.json   # evaluation sweep
-python ablation.py --mode no_tool --seeds 0-2                  # control experiments
+python ablation.py --mode no_tool --seeds 0-4                  # control experiments
+python live_demo.py --device tv_remote --seed 5              # interactive viewer demo for recording (DEMO_GUIDE.md)
 python render_scene.py                                          # scene renders (5 cameras)
 python render_devices.py                                        # the four devices, closed / opened
 ```
@@ -71,6 +73,7 @@ criterion).
 | `battery_sim/policy.py` | bimanual skill state machine; skills are generators so both arms run concurrently (`run_par`) |
 | `battery_sim/success.py` | success judgement |
 | `run_episode.py`, `ablation.py` | evaluation and control experiments |
+| `live_demo.py`, `DEMO_GUIDE.md` | live MuJoCo viewer demo (pause, speed, stage overlay) and how to record the demo video |
 | `dev_tools/` | debugging harness (snapshots before the pry / flip, step-by-step traces, retention test) |
 | `legacy_midterm/` | mid-term single-arm experiment scripts (pop-up design, no longer runnable) |
 | `battery_sim/mjcf/` | SO-101 model (MuJoCo Menagerie, Apache-2.0, vendored by so101-nexus) + assets |
