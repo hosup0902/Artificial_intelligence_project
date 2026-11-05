@@ -11,7 +11,18 @@ from battery_sim.devices import DEVICE_ORDER, DEVICES  # noqa: E402
 from battery_sim.env import BatteryRemovalEnv  # noqa: E402
 
 OUT = Path(__file__).resolve().parent / "renders"
-font = ImageFont.truetype("C:/Windows/Fonts/malgunbd.ttf", 30)
+def _font(size):
+    """Korean-capable font if available (Windows: Malgun Gothic; Linux: Noto CJK / Nanum), else PIL default."""
+    for f in ("C:/Windows/Fonts/malgunbd.ttf", "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+              "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf"):
+        try:
+            return ImageFont.truetype(f, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
+font = _font(30)
 tiles = []
 for dev in DEVICE_ORDER:
     env = BatteryRemovalEnv(device=dev, randomize=False)
