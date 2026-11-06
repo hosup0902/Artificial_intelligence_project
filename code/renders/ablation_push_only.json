@@ -575,7 +575,7 @@
  },
  {
   "mode": "push_only",
-  "device": "ac_remote",
+  "device": "light_remote",
   "seed": 0,
   "success": false,
   "cells_in_bin": [
@@ -618,21 +618,21 @@
    ],
    [
     "grasp_device",
-    false
-   ],
-   [
-    "grasp_device",
-    false
+    true
    ],
    [
     "return_tool",
+    true
+   ],
+   [
+    "flip_over_bin",
     false
    ]
   ]
  },
  {
   "mode": "push_only",
-  "device": "ac_remote",
+  "device": "light_remote",
   "seed": 1,
   "success": false,
   "cells_in_bin": [
@@ -675,10 +675,10 @@
    ],
    [
     "grasp_device",
-    false
+    true
    ],
    [
-    "grasp_device",
+    "flip_over_bin",
     false
    ],
    [
@@ -689,7 +689,7 @@
  },
  {
   "mode": "push_only",
-  "device": "ac_remote",
+  "device": "light_remote",
   "seed": 2,
   "success": false,
   "cells_in_bin": [
@@ -735,18 +735,18 @@
     true
    ],
    [
-    "flip_over_bin",
+    "return_tool",
     false
    ],
    [
-    "return_tool",
+    "flip_over_bin",
     false
    ]
   ]
  },
  {
   "mode": "push_only",
-  "device": "ac_remote",
+  "device": "light_remote",
   "seed": 3,
   "success": false,
   "cells_in_bin": [
@@ -792,18 +792,18 @@
     true
    ],
    [
-    "flip_over_bin",
+    "return_tool",
     false
    ],
    [
-    "return_tool",
+    "flip_over_bin",
     false
    ]
   ]
  },
  {
   "mode": "push_only",
-  "device": "ac_remote",
+  "device": "light_remote",
   "seed": 4,
   "success": false,
   "cells_in_bin": [
@@ -860,7 +860,7 @@
  },
  {
   "mode": "push_only",
-  "device": "light_remote",
+  "device": "ac_remote",
   "seed": 0,
   "success": false,
   "cells_in_bin": [
@@ -903,21 +903,21 @@
    ],
    [
     "grasp_device",
-    true
+    false
+   ],
+   [
+    "grasp_device",
+    false
    ],
    [
     "return_tool",
-    true
-   ],
-   [
-    "flip_over_bin",
     false
    ]
   ]
  },
  {
   "mode": "push_only",
-  "device": "light_remote",
+  "device": "ac_remote",
   "seed": 1,
   "success": false,
   "cells_in_bin": [
@@ -960,6 +960,10 @@
    ],
    [
     "grasp_device",
+    false
+   ],
+   [
+    "grasp_device",
     true
    ],
    [
@@ -974,7 +978,7 @@
  },
  {
   "mode": "push_only",
-  "device": "light_remote",
+  "device": "ac_remote",
   "seed": 2,
   "success": false,
   "cells_in_bin": [
@@ -1020,18 +1024,18 @@
     true
    ],
    [
-    "return_tool",
+    "flip_over_bin",
     false
    ],
    [
-    "flip_over_bin",
+    "return_tool",
     false
    ]
   ]
  },
  {
   "mode": "push_only",
-  "device": "light_remote",
+  "device": "ac_remote",
   "seed": 3,
   "success": false,
   "cells_in_bin": [
@@ -1077,18 +1081,18 @@
     true
    ],
    [
-    "return_tool",
+    "flip_over_bin",
     false
    ],
    [
-    "flip_over_bin",
+    "return_tool",
     false
    ]
   ]
  },
  {
   "mode": "push_only",
-  "device": "light_remote",
+  "device": "ac_remote",
   "seed": 4,
   "success": false,
   "cells_in_bin": [

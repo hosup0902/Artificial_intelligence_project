@@ -16,7 +16,8 @@
   ul, ol { margin: 3pt 0 7pt; padding-left: 17pt; }
   li { margin: 1.5pt 0; }
   table { border-collapse: collapse; width: 100%; margin: 6pt 0 10pt; font-size: 8.9pt; line-height: 1.45; break-inside: auto; }
-  th, td { border: 0.6pt solid var(--line); padding: 3pt 5pt; vertical-align: top; text-align: left; }
+  th, td { border: 0.6pt solid var(--line); padding: 3pt 5pt; vertical-align: top; text-align: left; word-break: keep-all; }
+  td:first-child { min-width: 52pt; }
   th { background: var(--tint); font-weight: 700; }
   tr { break-inside: avoid; }
   td.n, th.n { text-align: right; white-space: nowrap; }
@@ -49,6 +50,7 @@
   .bar .fil.p2 { background: #b4321f; }
   .bar .val { width: 70pt; flex: none; text-align: right; font-weight: 700; }
   .pb { break-before: page; }
+  .keep { break-inside: avoid; }
   .small { font-size: 8.8pt; color: var(--muted); }
 </style>
 </head>
@@ -62,9 +64,9 @@
     <img src="assets/start_hero.jpg" alt="양팔 작업대">
     <div class="stats">
       <div class="stat"><b>80/80</b><span>주 평가 성공률<br>4기기 × seed 0–19</span></div>
-      <div class="stat"><b>79/80</b><span>추가 검증 성공률<br>4기기 × seed 20–39 (개발에 안 쓴 seed)</span></div>
+      <div class="stat"><b>80/80</b><span>추가 검증 성공률<br>4기기 × seed 20–39 (개발에 안 쓴 seed)</span></div>
       <div class="stat"><b>0/20 · 0/20</b><span>대조실험 (뒤집기만 / 밀기만)<br>수거함에 들어간 셀 0/40 · 0/40</span></div>
-      <div class="stat"><b>32.6 N</b><span>기기에 걸린 최대 접촉력<br>(판정 기준 40 N)</span></div>
+      <div class="stat"><b>32.5 N</b><span>기기에 걸린 최대 접촉력<br>(판정 기준 40 N)</span></div>
     </div>
   </div>
   <div class="meta">
@@ -82,7 +84,7 @@ SO-101 두 대가 사람 작업자의 두 손처럼 일한다. 주 팔(R)은 리
 공구 팔(L)은 거치대에서 얇은 분해 공구(T자 갈고리 팁)를 꺼내 notch에 넣어 두 셀을 스프링 쪽으로 밀어 립을 지나게 하고 + 끝을
 지렛대로 들어 립 위에 얹는다. 이어서 R이 리모컨을 폐건전지 수거함 위에서 뒤집고 흔들어 셀을 떨어뜨리고, 빈 본체를 소형 폐가전 상자에 넣는다.
 정책은 LLM이 작성한 스킬 함수와 상태 머신이며, 측정값 기반 폐루프 보정과 재시도를 포함한다.
-고정된 최종 코드로 4기기 × seed 0–19 = 80회 평가에서 <b>80/80(100 %)</b>, 개발 중 한 번도 쓰지 않은 seed 20–39 80회에서 <b>79/80(98.8 %)</b>을 얻었다.</p>
+고정된 최종 코드로 4기기 × seed 0–19 = 80회 평가에서 <b>80/80(100 %)</b>, 개발 중 한 번도 쓰지 않은 seed 20–39 80회에서 <b>80/80(100.0 %)</b>을 얻었다.</p>
 <p>이 결과에는 두 단계의 시행착오가 있다. <b>Phase 1</b>(중간 발표, 팔 1대)에서는 그리퍼가 셀 + 끝을 들어 올릴 수 없어 "밀면 + 끝이 바닥
 지지대 때문에 저절로 들리는" 단순화를 썼고, TV 리모컨만 동작했다(중간 발표 10/10, 재측정 7/10, 다른 기기 0/6).
 <b>Phase 2</b>(최종)에서는 이 단순화를 없애고 팔을 2대로 늘려 공구를 쓰게 했으며, 20차례가 넘는 평가–분석–수정 반복으로 4기기 모두를 성공시켰다.
@@ -188,12 +190,12 @@ elliptic 마찰 원뿔, impratio 10, 제어 주기 20 ms(50 Hz). 장면 전체�
 </ul>
 <p>결과적으로 셀을 빼려면 + 끝을 립 길이보다 더 스프링 쪽으로 밀고(AA 6.2 mm, AAA 립 끝 + 1.1 mm), <b>그 상태로 + 끝을 립 윗면보다 위로 들어야</b> 한다.
 밀기만 하면 스프링이 셀을 립 밑으로 다시 밀어 넣고, 뒤집기만 하면 립에 걸린다. 이를 두 가지로 검증했다: (a) 공구 없이 기기를 뒤집어 놓고 ±3 g로 흔드는
-보유력 시험(<code>dev_tools/retention_test.py</code>, 4기기 모두 셀 이동 5 mm 이하), (b) 실제 정책의 대조실험(4.4절, 0/20 · 0/20).</p>
+보유력 시험(<code>dev_tools/retention_test.py</code>, 4기기 모두 셀이 칸 안에 남음, 셀 이동 최대 6.1 mm — 판정 기준 30 mm), (b) 실제 정책의 대조실험(4.4절, 0/20 · 0/20).</p>
 
 <h3>2.4 초기 상태 무작위화와 안정성 확인</h3>
 <p>seed마다 리모컨(+ 커버 + 셀을 한 덩어리로)을 공칭 위치 (0.205, 0.005) m 기준으로 <b>dx ∈ [−20, 0] mm, dy ∈ [−12, +22] mm, yaw ∈ [−0.25, +0.25] rad(±14.3°)</b>
 균일 무작위로 놓고 0.5 s 안정화한 뒤 시작한다. 마찰·질량은 고정. 같은 seed는 같은 초기 상태를 만들고 정책이 결정적이므로 결과가 재현된다.
-안정화 후 셀·커버·본체가 의도한 자리에 놓였는지는 시작 시점의 셀 상태(<code>cell_state</code>: + 끝 위치 0.0 mm, 기울기 0°)로 매 에피소드 확인된다.</p>
+안정화 후 셀·커버·본체가 의도한 자리에 안정적으로 놓이는지는 디버깅 추적에서 공구 작업 직전 측정한 셀 상태(<code>cell_state</code>: + 끝 이동 0.0 ± 0.1 mm, 기울기 0 ± 0.5°)로 확인했고, 공구 없이 뒤집어 흔드는 보유력 시험(2.3)으로 고정 상태도 확인했다.</p>
 
 <!-- ===================================================================== 3 -->
 <h2>3. Policy</h2>
@@ -207,7 +209,7 @@ elliptic 마찰 원뿔, impratio 10, 제어 주기 20 ms(50 Hz). 장면 전체�
   <li><b>스크립트가 맞는 이유</b>: 단계가 뚜렷해 스킬로 나누기 쉽고, mm 단위 정밀 접촉을 기하로 직접 다룰 수 있으며, 단계 이름이 로그에 남아 실패 지점을 추적하기 쉽다.</li>
 </ul>
 <p><b>LLM 사용 정보.</b> 도구: Anthropic Claude의 에이전트형 코딩 도구 <b>Claude Code</b>. 모델명과 버전은 <code>code/PROMPTS_phase1.md</code> 머리말에 기록했다(두 단계 모두 같은 모델).
-프롬프트 원문 전체: Phase 1 35개(<code>PROMPTS_phase1.md</code>), Phase 2 8개(<code>PROMPTS_phase2.md</code>). 생성된 코드: <code>code/</code> 전체.
+프롬프트 원문 전체: Phase 1 대화 기록 35개 항목(<code>PROMPTS_phase1.md</code>, 도구 알림 포함), Phase 2 사용자 프롬프트 8개(<code>PROMPTS_phase2.md</code>). 생성된 코드: <code>code/</code> 전체.
 대화는 "한 번의 프롬프트"가 아니라 여러 턴이며, Claude가 코드를 작성·실행하고 시뮬레이션 로그·접촉력·렌더링을 보고 원인을 찾아 고치는 방식이었다.
 학생은 목표·범위·방향(예: "양팔로", "공구를 써서", "실제와 같은 구조로", "80/80이 될 때까지")을 지시하고, 결과와 설명을 검토했다.</p>
 
@@ -269,7 +271,7 @@ roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 �
   <td>얇은 공구로 밀고 <b>직접 들어 올림</b>. 바닥 지지대 삭제, 립 + 스프링 + notch</td></tr>
   <tr><td>기기 고정</td><td>펜스에 붙이기만 함</td><td>주 팔이 옆면을 잡아 고정(사람의 다른 손)</td></tr>
   <tr><td>단계</td><td>fence → cover → reseat → unlatch → grasp → flip → crate</td><td>fence ∥ pick_tool → cover → reseat → hold → pry → retreat → grasp → flip ∥ return_tool → crate</td></tr>
-  <tr><td>결과</td><td>TV만 동작(재측정 7/10), 다른 기기 0/6</td><td>4기기 80/80(100 %) + 추가 검증 79/80(98.8 %)</td></tr>
+  <tr><td>결과</td><td>TV만 동작(재측정 7/10), 다른 기기 0/6</td><td>4기기 80/80(100 %) + 추가 검증 80/80(100.0 %)</td></tr>
 </table>
 
 <!-- ===================================================================== 4 -->
@@ -284,14 +286,14 @@ roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 �
   pry 시도 횟수, 공구 반납 여부, 실행 시간.</li>
 </ul>
 
-<h3>4.2 결과 — 주 평가 (seed 0–19)</h3>
-<table><tr><th>기기</th><th class='n'>성공</th><th class='n'>수거함 셀</th><th class='n'>최대 접촉력 평균 / 최대 (N)</th><th class='n'>시뮬레이션 시간 평균 (최소–최대, s)</th><th class='n'>물리 step 평균</th><th class='n'>pry 재시도 에피소드</th><th class='n'>공구 반납</th></tr><tr><td>TV 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.9 / 26.2</td><td class='n'>70.8 (68.8–74.2)</td><td class='n'>35,418</td><td class='n'>—</td><td class='n'>18/20</td></tr><tr><td>셋톱박스 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 25.8</td><td class='n'>69.8 (66.3–75.3)</td><td class='n'>34,880</td><td class='n'>—</td><td class='n'>20/20</td></tr><tr><td>에어컨 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>24.3 / 32.6</td><td class='n'>69.7 (68.0–72.9)</td><td class='n'>34,849</td><td class='n'>—</td><td class='n'>18/20</td></tr><tr><td>조명 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.7 / 25.9</td><td class='n'>69.3 (66.1–75.6)</td><td class='n'>34,658</td><td class='n'>—</td><td class='n'>20/20</td></tr><tr><td><b>합계</b></td><td class='n'><b>80/80 (100.0 %)</b></td><td class='n'>160/160</td><td class='n'>25.4 / 32.6</td><td class='n'>69.9</td><td class='n'>34,951</td><td class='n'>—</td><td class='n'>76/80</td></tr></table>
-<h3>4.3 결과 — 추가 검증 (seed 20–39, 개발에 쓰지 않은 seed)</h3>
-<table><tr><th>기기</th><th class='n'>성공</th><th class='n'>수거함 셀</th><th class='n'>최대 접촉력 평균 / 최대 (N)</th><th class='n'>시뮬레이션 시간 평균 (최소–최대, s)</th><th class='n'>물리 step 평균</th><th class='n'>pry 재시도 에피소드</th><th class='n'>공구 반납</th></tr><tr><td>TV 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>26.0 / 26.4</td><td class='n'>71.0 (68.9–74.2)</td><td class='n'>35,518</td><td class='n'>0</td><td class='n'>13/20</td></tr><tr><td>셋톱박스 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 26.0</td><td class='n'>72.5 (67.3–77.7)</td><td class='n'>36,252</td><td class='n'>0</td><td class='n'>20/20</td></tr><tr><td>에어컨 리모컨 (AA)</td><td class='n'><b>19/20</b></td><td class='n'>38/40</td><td class='n'>26.1 / 32.5</td><td class='n'>84.5 (68.3–358.8)</td><td class='n'>42,268</td><td class='n'>1</td><td class='n'>15/20</td></tr><tr><td>조명 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 25.9</td><td class='n'>71.2 (66.4–77.1)</td><td class='n'>35,624</td><td class='n'>0</td><td class='n'>20/20</td></tr><tr><td><b>합계</b></td><td class='n'><b>79/80 (98.8 %)</b></td><td class='n'>158/160</td><td class='n'>25.8 / 32.5</td><td class='n'>74.8</td><td class='n'>37,416</td><td class='n'>1</td><td class='n'>68/80</td></tr></table>
-<p>실패: ac_remote seed 20 (pry_cells). 기기에 걸린 최대 접촉력의 최댓값은 32.6 N(기준 40 N)이다. 시뮬레이션 시간은 에피소드당 약 70 s이며 실제 실행 시간은 클라우드 컨테이너에서 평균 약 35 s(4개 평가 동시 실행)였다. 공구 반납 실패는 성공 기준 밖의 참고 지표로, 공구가 포크 거치대에 끝까지 들어가지 않은 경우다.</p>
+<div class="keep"><h3>4.2 결과 — 주 평가 (seed 0–19)</h3>
+<table><tr><th>기기</th><th class='n'>성공</th><th class='n'>수거함 셀</th><th class='n'>최대 접촉력 평균 / 최대 (N)</th><th class='n'>시뮬레이션 시간 평균 (최소–최대, s)</th><th class='n'>물리 step 평균</th><th class='n'>pry 재시도 에피소드</th><th class='n'>공구 반납</th></tr><tr><td>TV 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.9 / 26.2</td><td class='n'>70.8 (68.8–74.2)</td><td class='n'>35,418</td><td class='n'>0</td><td class='n'>18/20</td></tr><tr><td>셋톱박스 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 25.8</td><td class='n'>69.8 (66.3–75.3)</td><td class='n'>34,880</td><td class='n'>0</td><td class='n'>20/20</td></tr><tr><td>에어컨 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>24.3 / 32.5</td><td class='n'>70.4 (67.8–72.7)</td><td class='n'>35,184</td><td class='n'>0</td><td class='n'>18/20</td></tr><tr><td>조명 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.7 / 25.9</td><td class='n'>69.3 (66.1–75.6)</td><td class='n'>34,658</td><td class='n'>0</td><td class='n'>20/20</td></tr><tr><td><b>합계</b></td><td class='n'><b>80/80 (100.0 %)</b></td><td class='n'>160/160</td><td class='n'>25.4 / 32.5</td><td class='n'>70.1</td><td class='n'>35,035</td><td class='n'>0</td><td class='n'>76/80</td></tr></table></div>
+<div class="keep"><h3>4.3 결과 — 추가 검증 (seed 20–39, 개발에 쓰지 않은 seed)</h3>
+<table><tr><th>기기</th><th class='n'>성공</th><th class='n'>수거함 셀</th><th class='n'>최대 접촉력 평균 / 최대 (N)</th><th class='n'>시뮬레이션 시간 평균 (최소–최대, s)</th><th class='n'>물리 step 평균</th><th class='n'>pry 재시도 에피소드</th><th class='n'>공구 반납</th></tr><tr><td>TV 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>26.0 / 26.4</td><td class='n'>71.0 (68.9–74.2)</td><td class='n'>35,518</td><td class='n'>0</td><td class='n'>13/20</td></tr><tr><td>셋톱박스 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 26.0</td><td class='n'>72.5 (67.3–77.7)</td><td class='n'>36,252</td><td class='n'>0</td><td class='n'>20/20</td></tr><tr><td>에어컨 리모컨 (AA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.0 / 32.4</td><td class='n'>69.9 (68.1–72.6)</td><td class='n'>34,970</td><td class='n'>0</td><td class='n'>16/20</td></tr><tr><td>조명 리모컨 (AAA)</td><td class='n'><b>20/20</b></td><td class='n'>40/40</td><td class='n'>25.6 / 25.9</td><td class='n'>71.2 (66.4–77.1)</td><td class='n'>35,624</td><td class='n'>0</td><td class='n'>20/20</td></tr><tr><td><b>합계</b></td><td class='n'><b>80/80 (100.0 %)</b></td><td class='n'>160/160</td><td class='n'>25.6 / 32.4</td><td class='n'>71.2</td><td class='n'>35,591</td><td class='n'>0</td><td class='n'>69/80</td></tr></table>
+<p>두 평가 모두 모든 에피소드가 성공했다. 기기에 걸린 최대 접촉력의 최댓값은 32.5 N(기준 40 N)이다. 시뮬레이션 시간은 에피소드당 약 70 s이며 실제 실행 시간은 클라우드 컨테이너에서 평균 약 51 s(4개 평가 동시 실행)였다. 공구 반납 실패는 성공 기준 밖의 참고 지표로, 공구가 포크 거치대에 끝까지 들어가지 않은 경우다.</p></div>
 <figure><img src="assets/tv_sheet.jpg"><figcaption>그림 5. 최종 정책의 실제 롤아웃(TV 리모컨 seed 5). 시작 → 펜스 → 공구 집기 → 커버 → 고정 → pry 4단계 → 재파지 → 뒤집기 → 상자. 조명(AAA) seed 15의 같은 그림은 <code>code/renders/final/</code>.</figcaption></figure>
 
-<h3>4.4 대조실험 — "구조가 실제와 같다"는 근거</h3>
+<div class="keep"><h3>4.4 대조실험 — "구조가 실제와 같다"는 근거</h3>
 <p>같은 seed(0–4 × 4기기)와 같은 성공 기준에서 공구 스킬만 바꿨다(<code>python ablation.py --mode no_tool|push_only</code>).</p>
 <table>
   <tr><th>실험</th><th>설명</th><th class="n">성공</th><th class="n">수거함에 들어간 셀</th></tr>
@@ -300,10 +302,10 @@ roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 �
   <tr><td><b>full</b></td><td>전체 정책(밀고 + 들기)</td><td class="n">80/80</td><td class="n">160/160</td></tr>
 </table>
 <p>Phase 1의 대조실험(걸림 해제 생략)은 성공 0/10이었지만 셀 20개 중 6개가 수거함에 들어가는 "누수"가 있었다(5.1). Phase 2 구조에서는 누수가 0/80이다.
-즉 최종 환경에서는 셀이 립과 스프링에 실제처럼 고정되어 "밀고 + 들어 올리기"를 모두 해야만 빠진다.</p>
+즉 최종 환경에서는 셀이 립과 스프링에 실제처럼 고정되어 "밀고 + 들어 올리기"를 모두 해야만 빠진다.</p></div>
 
 <!-- ===================================================================== 5 -->
-<h2 class="pb">5. Failure Analysis</h2>
+<h2>5. Failure Analysis</h2>
 <p>과제 요구에 따라 원인을 <span class="tag E">환경</span>(시뮬레이션 모델·기구 설계 문제)과 <span class="tag P">정책</span>(스킬·계획·제어 문제)으로 구분한다.
 두 가지가 겹친 경우 <span class="tag EP">환경+정책</span>. 실패는 로그(단계별 판정), 접촉 목록(어느 geom이 어느 geom을 몇 N으로 밀었는지), 셀 자세 추적,
 단계별 반투명 렌더링으로 분석했다(<code>code/dev_tools/</code>).</p>
@@ -368,6 +370,8 @@ roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 �
 <div class='bar'><div class='lab'>P2 eval19 (중단)</div><div class='trk'><div class='fil p2' style='width:91.9%'></div></div><div class='val'>68/74</div></div>
 <div class='bar'><div class='lab'>P2 eval20</div><div class='trk'><div class='fil p2' style='width:100.0%'></div></div><div class='val'>80/80</div></div>
 <div class='bar'><div class='lab'>P2 eval20 코드, seed 20–39</div><div class='trk'><div class='fil p2' style='width:98.8%'></div></div><div class='val'>79/80</div></div>
+<div class='bar'><div class='lab'>P2 최종 (eval21) seed 0–19</div><div class='trk'><div class='fil p2' style='width:100.0%'></div></div><div class='val'>80/80</div></div>
+<div class='bar'><div class='lab'>P2 최종 (eval21) seed 20–39</div><div class='trk'><div class='fil p2' style='width:100.0%'></div></div><div class='val'>80/80</div></div>
 </div>
 <p class="small">eval16–19는 회귀를 발견하고 중간에 멈춘 평가(분모 = 그때까지 끝난 에피소드). 모든 수치는 <code>code/dev_tools/_out/evalN/</code> 로그(저장소에는 최종 결과만 <code>code/renders/</code>에 보관)와 <code>PROGRESS.md</code> 작업 로그에 근거.</p>
 
@@ -428,7 +432,7 @@ roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 �
 <ul>
   <li>실제 리모컨과 같은 고정 구조(립 + 스프링)에서 <b>공구를 써서</b> 셀을 빼는 양팔 조작을 4기기 모두에서 구현했고, 대조실험으로 "밀기만/뒤집기만으로는 안 된다"를 정량 확인했다(0/40 셀).</li>
   <li>측정값 기반 폐루프(공구 팁 보정, 셀 위치·높이·기울기 피드백, 파지 실패 감지, 힘 제한, 재시도) 덕분에 서보 처짐·공구 미끄러짐·5자유도 IK 오차에 강건했다.
-  최종 평가에서 pry는 거의 모두 첫 시도에 성공했다.</li>
+  최종 평가 160회 모두 pry가 첫 시도에 성공했다(재시도 0회).</li>
   <li>제너레이터 기반 동시 실행으로 두 팔이 실제로 병렬 작업(커버 열기 ∥ 공구 집기, 뒤집기 ∥ 공구 반납) — 에피소드 약 70 s.</li>
   <li>최대 접촉력이 판정 기준 40 N보다 충분히 낮다(4.2).</li>
   <li>개발에 쓰지 않은 seed에서도 같은 성능(4.3) — 특정 seed에 맞춘 정책이 아님.</li>

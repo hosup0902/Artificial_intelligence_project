@@ -48,13 +48,15 @@ def table(res, seeds):
     return head + "".join(rows) + "</table>", allr
 
 
-def bars():
+def bars(ok_m=80, ok_h=80):
     H = [("P1 v1 (턱 없음, TV)", 5, 10, 1), ("P1 v2 (턱 3 mm)", 9, 10, 1), ("P1 v3 (스프링 1000)", 0, 10, 1), ("P1 v4 (턱 4.5 mm) = 중간 발표", 10, 10, 1),
          ("P1 재측정 (TV)", 7, 10, 1), ("P1 다른 기기 3종", 0, 6, 1),
          ("P2 eval7 (4기기 × 3)", 10, 12, 2), ("P2 eval10 (4기기 × 10)", 40, 40, 2), ("P2 eval11", 39, 40, 2), ("P2 eval12 (4기기 × 20)", 79, 80, 2),
          ("P2 eval13", 79, 80, 2), ("P2 eval14", 78, 80, 2), ("P2 eval15 (AAA 치수 변경)", 73, 80, 2), ("P2 eval18 (중단)", 25, 32, 2),
-         ("P2 eval19 (중단)", 68, 74, 2), ("P2 eval20", 80, 80, 2), ("P2 eval20 코드, seed 20–39", 79, 80, 2)]
+         ("P2 eval19 (중단)", 68, 74, 2), ("P2 eval20", 80, 80, 2), ("P2 eval20 코드, seed 20–39", 79, 80, 2),
+         ("P2 최종 (eval21) seed 0–19", None, 80, 2), ("P2 최종 (eval21) seed 20–39", None, 80, 2)]
     out = []
+    H[-2] = (H[-2][0], ok_m, 80, 2); H[-1] = (H[-1][0], ok_h, 80, 2)
     for lab, ok, n, ph in H:
         out.append(f"<div class='bar'><div class='lab'>{lab}</div><div class='trk'><div class='fil{' p2' if ph == 2 else ''}' style='width:{100*ok/n:.1f}%'></div></div>"
                    f"<div class='val'>{ok}/{n}</div></div>")
@@ -77,7 +79,7 @@ def main():
     rep = {"{{MAIN_RATE}}": f"{ok_m}/{len(ma)}", "{{HELD_RATE}}": f"{ok_h}/{len(ha)}", "{{PEAK_MAX}}": f"{peak:.1f}",
            "{{MAIN_N}}": f"{ok_m}/{len(ma)}({100*ok_m/len(ma):.0f} %)", "{{HELD_N}}": f"{ok_h}/{len(ha)}({100*ok_h/len(ha):.1f} %)",
            "{{MAIN_N_SHORT}}": f"{ok_m}/{len(ma)}", "{{MAIN_CELLS}}": f"{sum(sum(r['cells_in_bin']) for r in ma)}/{2*len(ma)}",
-           "{{MAIN_TABLE}}": mt, "{{HELD_TABLE}}": ht, "{{RESULT_NOTES}}": notes, "{{HISTORY_BARS}}": bars()}
+           "{{MAIN_TABLE}}": mt, "{{HELD_TABLE}}": ht, "{{RESULT_NOTES}}": notes, "{{HISTORY_BARS}}": bars(ok_m, ok_h)}
     for k, v in rep.items():
         s = s.replace(k, v)
     assert "{{" not in s, s[s.index("{{"):s.index("{{") + 40]

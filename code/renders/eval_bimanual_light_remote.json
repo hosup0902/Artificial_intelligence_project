@@ -15,7 +15,9 @@
   "steps": 37810,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 39.6
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 52.9
  },
  {
   "seed": 1,
@@ -33,7 +35,9 @@
   "steps": 35580,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 34.4
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 46.9
  },
  {
   "seed": 2,
@@ -51,7 +55,9 @@
   "steps": 33430,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 28.6
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 39.3
  },
  {
   "seed": 3,
@@ -69,7 +75,9 @@
   "steps": 33440,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 27.8
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 38.6
  },
  {
   "seed": 4,
@@ -87,7 +95,9 @@
   "steps": 35520,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 33.0
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 44.2
  },
  {
   "seed": 5,
@@ -105,7 +115,9 @@
   "steps": 35120,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 29.7
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 39.5
  },
  {
   "seed": 6,
@@ -123,7 +135,9 @@
   "steps": 33500,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 28.4
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 38.7
  },
  {
   "seed": 7,
@@ -141,7 +155,9 @@
   "steps": 35450,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 29.7
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 39.5
  },
  {
   "seed": 8,
@@ -159,7 +175,9 @@
   "steps": 33220,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 31.4
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 43.9
  },
  {
   "seed": 9,
@@ -177,7 +195,9 @@
   "steps": 33120,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 28.7
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 39.4
  },
  {
   "seed": 10,
@@ -195,7 +215,9 @@
   "steps": 35200,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 32.1
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 42.3
  },
  {
   "seed": 11,
@@ -213,7 +235,9 @@
   "steps": 33280,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 26.1
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 50.2
  },
  {
   "seed": 12,
@@ -231,7 +255,9 @@
   "steps": 36820,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 40.4
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 76.2
  },
  {
   "seed": 13,
@@ -249,7 +275,9 @@
   "steps": 33200,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 27.6
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 54.0
  },
  {
   "seed": 14,
@@ -267,7 +295,9 @@
   "steps": 35150,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 29.8
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 56.0
  },
  {
   "seed": 15,
@@ -285,7 +315,9 @@
   "steps": 33040,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 24.6
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 51.3
  },
  {
   "seed": 16,
@@ -303,7 +335,9 @@
   "steps": 36020,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 40.4
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 72.5
  },
  {
   "seed": 17,
@@ -321,7 +355,9 @@
   "steps": 33430,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 29.4
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 62.8
  },
  {
   "seed": 18,
@@ -339,7 +375,9 @@
   "steps": 35470,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 32.6
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 62.5
  },
  {
   "seed": 19,
@@ -357,6 +395,8 @@
   "steps": 35350,
   "failed_stage": null,
   "tool_returned": true,
-  "wall": 31.2
+  "pry_attempts": 1,
+  "hold_ok": true,
+  "wall": 54.6
  }
 ]

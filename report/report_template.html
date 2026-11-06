@@ -50,6 +50,7 @@
   .bar .fil.p2 { background: #b4321f; }
   .bar .val { width: 70pt; flex: none; text-align: right; font-weight: 700; }
   .pb { break-before: page; }
+  .keep { break-inside: avoid; }
   .small { font-size: 8.8pt; color: var(--muted); }
 </style>
 </head>
@@ -285,14 +286,14 @@ roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 �
   pry 시도 횟수, 공구 반납 여부, 실행 시간.</li>
 </ul>
 
-<h3>4.2 결과 — 주 평가 (seed 0–19)</h3>
-{{MAIN_TABLE}}
-<h3>4.3 결과 — 추가 검증 (seed 20–39, 개발에 쓰지 않은 seed)</h3>
+<div class="keep"><h3>4.2 결과 — 주 평가 (seed 0–19)</h3>
+{{MAIN_TABLE}}</div>
+<div class="keep"><h3>4.3 결과 — 추가 검증 (seed 20–39, 개발에 쓰지 않은 seed)</h3>
 {{HELD_TABLE}}
-<p>{{RESULT_NOTES}}</p>
+<p>{{RESULT_NOTES}}</p></div>
 <figure><img src="assets/tv_sheet.jpg"><figcaption>그림 5. 최종 정책의 실제 롤아웃(TV 리모컨 seed 5). 시작 → 펜스 → 공구 집기 → 커버 → 고정 → pry 4단계 → 재파지 → 뒤집기 → 상자. 조명(AAA) seed 15의 같은 그림은 <code>code/renders/final/</code>.</figcaption></figure>
 
-<h3>4.4 대조실험 — "구조가 실제와 같다"는 근거</h3>
+<div class="keep"><h3>4.4 대조실험 — "구조가 실제와 같다"는 근거</h3>
 <p>같은 seed(0–4 × 4기기)와 같은 성공 기준에서 공구 스킬만 바꿨다(<code>python ablation.py --mode no_tool|push_only</code>).</p>
 <table>
   <tr><th>실험</th><th>설명</th><th class="n">성공</th><th class="n">수거함에 들어간 셀</th></tr>
@@ -301,10 +302,10 @@ roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 �
   <tr><td><b>full</b></td><td>전체 정책(밀고 + 들기)</td><td class="n">{{MAIN_N_SHORT}}</td><td class="n">{{MAIN_CELLS}}</td></tr>
 </table>
 <p>Phase 1의 대조실험(걸림 해제 생략)은 성공 0/10이었지만 셀 20개 중 6개가 수거함에 들어가는 "누수"가 있었다(5.1). Phase 2 구조에서는 누수가 0/80이다.
-즉 최종 환경에서는 셀이 립과 스프링에 실제처럼 고정되어 "밀고 + 들어 올리기"를 모두 해야만 빠진다.</p>
+즉 최종 환경에서는 셀이 립과 스프링에 실제처럼 고정되어 "밀고 + 들어 올리기"를 모두 해야만 빠진다.</p></div>
 
 <!-- ===================================================================== 5 -->
-<h2 class="pb">5. Failure Analysis</h2>
+<h2>5. Failure Analysis</h2>
 <p>과제 요구에 따라 원인을 <span class="tag E">환경</span>(시뮬레이션 모델·기구 설계 문제)과 <span class="tag P">정책</span>(스킬·계획·제어 문제)으로 구분한다.
 두 가지가 겹친 경우 <span class="tag EP">환경+정책</span>. 실패는 로그(단계별 판정), 접촉 목록(어느 geom이 어느 geom을 몇 N으로 밀었는지), 셀 자세 추적,
 단계별 반투명 렌더링으로 분석했다(<code>code/dev_tools/</code>).</p>
@@ -413,7 +414,7 @@ roll 경로(5° 단계, 포켓 위치 고정, 관절 점프 ≤ 30°), 운반 �
 <ul>
   <li>실제 리모컨과 같은 고정 구조(립 + 스프링)에서 <b>공구를 써서</b> 셀을 빼는 양팔 조작을 4기기 모두에서 구현했고, 대조실험으로 "밀기만/뒤집기만으로는 안 된다"를 정량 확인했다(0/40 셀).</li>
   <li>측정값 기반 폐루프(공구 팁 보정, 셀 위치·높이·기울기 피드백, 파지 실패 감지, 힘 제한, 재시도) 덕분에 서보 처짐·공구 미끄러짐·5자유도 IK 오차에 강건했다.
-  최종 평가에서 pry는 거의 모두 첫 시도에 성공했다.</li>
+  최종 평가 160회 모두 pry가 첫 시도에 성공했다(재시도 0회).</li>
   <li>제너레이터 기반 동시 실행으로 두 팔이 실제로 병렬 작업(커버 열기 ∥ 공구 집기, 뒤집기 ∥ 공구 반납) — 에피소드 약 70 s.</li>
   <li>최대 접촉력이 판정 기준 40 N보다 충분히 낮다(4.2).</li>
   <li>개발에 쓰지 않은 seed에서도 같은 성능(4.3) — 특정 seed에 맞춘 정책이 아님.</li>

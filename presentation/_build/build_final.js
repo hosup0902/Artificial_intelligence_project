@@ -304,7 +304,7 @@ async function main() {
   pres.addSection({ title: "데모와 결론" });
   add("CONTENT", "데모: TV 리모컨 seed 5", "펜스 ∥ 공구 집기 → 커버 → 고정 → 밀고·들기 → 뒤집기 ∥ 공구 반납 → 상자 (실제 롤아웃, 약 70 s)", "데모와 결론");
   if (fs.existsSync(VIDEO)) {
-    S.addMedia({ type: "video", path: VIDEO, x: 0.55, y: 1.55, w: 8.55, h: 4.81, cover: A("start_hero.jpg"), objectName: "demo-video" });
+    S.addMedia({ type: "video", path: VIDEO, x: 0.55, y: 1.55, w: 8.55, h: 4.81, cover: "data:image/jpeg;base64," + fs.readFileSync(A("start_hero.jpg")).toString("base64"), objectName: "demo-video" });
   } else {
     img("start_hero.jpg", 0.55, 1.55, 8.55, 4.81, "demo-video-placeholder", true);
   }

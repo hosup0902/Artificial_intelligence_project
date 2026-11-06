@@ -22,8 +22,9 @@ the springs does **not** release them (see the ablations below); they have to be
 
 | experiment | command | result |
 |---|---|---|
-| full bimanual policy, 4 devices × seeds 0-19 | `python run_episode.py --seeds 0-19 --device <dev>` | **80/80** (each device 20/20), every pry on the first attempt; peak contact force on the device mean 25.4 N, max 32.6 N; mean episode 69.9 s sim (34 951 physics steps); tool returned to its holder 76/80 |
-| held-out seeds 20-39 (never used during development) | `python run_episode.py --seeds 20-39 --device <dev>` | 79/80 (TV, STB, light 20/20; AC 19/20 — seed 20: a cell's − end rides over its spring contact while lifting) |
+| full bimanual policy, 4 devices × seeds 0-19 | `python run_episode.py --seeds 0-19 --device <dev>` | **80/80** (each device 20/20) |
+| held-out seeds 20-39 (never used during development) | `python run_episode.py --seeds 20-39 --device <dev>` | **80/80** (each device 20/20) |
+| (both sets, final code) | | 160/160, every pry on the first attempt; peak contact force on the device ≤ 32.5 N; mean episode 70.6 s sim (~35 300 physics steps); tool returned to its holder 145/160 (advisory) |
 | ablation: no tool (just flip + shake) | `python ablation.py --mode no_tool --seeds 0-4` | 0/20, cells in bin 0/40 |
 | ablation: push into springs, no lift | `python ablation.py --mode push_only --seeds 0-4` | 0/20, cells in bin 0/40 |
 
@@ -73,6 +74,8 @@ criterion).
 | `battery_sim/policy.py` | bimanual skill state machine; skills are generators so both arms run concurrently (`run_par`) |
 | `battery_sim/success.py` | success judgement |
 | `run_episode.py`, `ablation.py` | evaluation and control experiments |
+| `PROMPTS_phase1.md`, `PROMPTS_phase2.md` | LLM (Claude Code) prompt logs of both phases (model name in the phase-1 header) |
+| `render_rollout_stages.py` | figures of the key moments of one rollout (`renders/final/`) |
 | `live_demo.py`, `DEMO_GUIDE.md` | live MuJoCo viewer demo (pause, speed, stage overlay) and how to record the demo video |
 | `dev_tools/` | debugging harness (snapshots before the pry / flip, step-by-step traces, retention test) |
 | `legacy_midterm/` | mid-term single-arm experiment scripts (pop-up design, no longer runnable) |

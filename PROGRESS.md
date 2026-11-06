@@ -109,8 +109,9 @@ cd code && MUJOCO_GL=osmesa /home/user/venv/bin/python run_episode.py --seeds 0 
 - 남은 선택 작업: AC seed 20 대책(− 끝 높이 감시), 공구 반납 개선, render_scene.py로 최종 그림 재생성(현재 renders/의 일부 그림은 중간발표용).
 - 사용자 요청(최종): AC seed 20 수정 + 160회 전부 성공, 보고서(report.pdf)·최종 PPT·발표 스크립트·데모 영상 가이드/스크립트 작성(ZIP 제외).
   - AC seed 20 원인: 들어올리는 중 셀 − 끝이 같이 들려 스프링 접점판 윗모서리를 넘음(블레이드–접점판 압축력 짝힘). → AC 스프링 400→300 N/m(TV와 동일). 보유력 시험 4기기 통과(최대 6.1 mm).
-  - [진행중] eval21 = 최종 코드로 4기기 × seed 0-39 (`code/dev_tools/_out/eval21/`), AC 대조실험 재측정.
+  - ✅ **eval21 = 최종 코드 4기기 × seed 0-39: 160/160** (pry 재시도 0, 최대 접촉력 32.5 N). 결과 `code/renders/eval_bimanual_*.json`, `renders/heldout/`. AC 대조실험(300 N/m) 0/5 ×2 → 대조실험 합 0/20 ×2, 셀 0/40.
   - main 브랜치의 Phase 1(팔 1대) 기록 병합 → `records/phase1_single_arm/`(HANDOFF.md, data/, images/), 프롬프트 `code/PROMPTS_phase1.md`, `code/PROMPTS_phase2.md`.
   - 보고서: `report/report_template.html` + `report/build_report.py`(결과 JSON에서 표 생성) → `report.pdf`. 그림 `report/assets/`.
   - 최종 PPT: `presentation/_build/build_final.js`(+ `make_results.py`) → `presentation/2024315782_이호섭_최종발표.pptx`, 노트 = `presentation/final_script.md`.
   - 데모: `presentation/demo_video_script.md`(3분 컷 구성·내레이션), `code/DEMO_GUIDE.md`.
+- 최종 산출물 완료: report.pdf(12쪽), 최종 PPT(12장, 데모 영상 포함, 노트 = 발표 스크립트), 데모 영상 스크립트, README(제출 구성·체크리스트).

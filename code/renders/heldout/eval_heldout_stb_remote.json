@@ -17,7 +17,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 32.2
+  "wall": 41.0
  },
  {
   "seed": 21,
@@ -37,7 +37,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 33.9
+  "wall": 43.3
  },
  {
   "seed": 22,
@@ -57,7 +57,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 40.2
+  "wall": 52.3
  },
  {
   "seed": 23,
@@ -77,7 +77,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 35.7
+  "wall": 47.6
  },
  {
   "seed": 24,
@@ -97,7 +97,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 30.7
+  "wall": 40.0
  },
  {
   "seed": 25,
@@ -117,7 +117,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 41.2
+  "wall": 52.2
  },
  {
   "seed": 26,
@@ -137,7 +137,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 33.7
+  "wall": 43.7
  },
  {
   "seed": 27,
@@ -157,7 +157,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 39.8
+  "wall": 52.4
  },
  {
   "seed": 28,
@@ -177,7 +177,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 29.7
+  "wall": 40.7
  },
  {
   "seed": 29,
@@ -197,7 +197,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 33.2
+  "wall": 44.1
  },
  {
   "seed": 30,
@@ -217,7 +217,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 33.7
+  "wall": 45.6
  },
  {
   "seed": 31,
@@ -237,7 +237,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 30.2
+  "wall": 41.4
  },
  {
   "seed": 32,
@@ -257,7 +257,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 36.7
+  "wall": 47.0
  },
  {
   "seed": 33,
@@ -277,7 +277,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 34.9
+  "wall": 45.1
  },
  {
   "seed": 34,
@@ -297,7 +297,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 37.3
+  "wall": 47.4
  },
  {
   "seed": 35,
@@ -317,7 +317,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 31.0
+  "wall": 42.1
  },
  {
   "seed": 36,
@@ -337,7 +337,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 30.1
+  "wall": 40.7
  },
  {
   "seed": 37,
@@ -357,7 +357,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 37.4
+  "wall": 47.6
  },
  {
   "seed": 38,
@@ -377,7 +377,7 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 33.1
+  "wall": 44.4
  },
  {
   "seed": 39,
@@ -397,6 +397,6 @@
   "tool_returned": true,
   "pry_attempts": 1,
   "hold_ok": true,
-  "wall": 35.2
+  "wall": 47.8
  }
 ]
