@@ -11,7 +11,7 @@
 |---|---|
 | `presentation/` | 중간 발표 PPT(`2024315782_이호섭.pptx`, PDF), **최종 발표 PPT**(`2024315782_이호섭_최종발표.pptx`), 발표 스크립트(`final_script.md`, 노트에도 들어 있음), 시연 영상 스크립트(`demo_video_script.md`) |
 | `code/` | 전체 소스, `README.md`(설치·실행), `requirements.txt`, 평가 결과(`renders/*.json`), LLM 프롬프트 기록(`PROMPTS_phase1.md`, `PROMPTS_phase2.md`) |
-| `report.pdf` | 최종 리포트 (Task Definition / Environment Design / Policy / Evaluation / Failure Analysis / Discussion). 원본: `report/report_template.html`, 빌드: `python report/build_report.py` |
+| `report.pdf` | 최종 리포트 (Task Definition / Environment Design / Policy / Evaluation / Failure Analysis / Discussion). **수정용 Word 파일: `report.docx`** — Word에서 고친 뒤 "다른 이름으로 저장 → PDF"로 `report.pdf`를 다시 만든다. (자동 생성: `python report/build_report.py` → `python3 report/build_docx.py`. 다시 생성하면 Word에서 고친 내용이 덮어써지므로 주의) |
 | `demo.mp4` | 3분 이내 시연 영상 (직접 촬영: `presentation/demo_video_script.md`, `code/DEMO_GUIDE.md`) |
 
 참고 자료(ZIP에 넣지 않아도 됨): `records/phase1_single_arm/`(중간 발표까지의 팔 1대 실험 기록·데이터·그림), `PROGRESS.md`(최종 단계 작업 로그), `REPORT_MATERIAL.md`(설계·실패 분석 정리).
